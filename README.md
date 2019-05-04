@@ -1,7 +1,7 @@
 # HeeePhotoBrowser
-现在支持设置预加载图片的个数，大量图片浏览也没问题。修复了小问题，提升体验。
+《现在支持设置预加载图片的个数，大量图片浏览也没问题。修复了小问题，提升体验。》
 
-用法更简单，仅一行代码：
+用法很简单，仅一行代码：
 
 [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:currentIndex highQualityImageArray:_urlArr andPreLoadImageNumber:2];
 
