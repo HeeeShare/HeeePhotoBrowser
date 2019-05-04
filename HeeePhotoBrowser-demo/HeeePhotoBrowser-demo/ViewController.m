@@ -46,9 +46,12 @@
         iv.clipsToBounds = YES;
         iv.contentMode = UIViewContentModeScaleAspectFill;
         iv.userInteractionEnabled = YES;
+        if (i == 2) {
+            iv.layer.cornerRadius = 10;
+        }
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageClick:)];
         [iv addGestureRecognizer:tap];
-        [iv sd_setImageWithURL:[NSURL URLWithString:_urlArr[i]] placeholderImage:[UIImage imageNamed:@"默认图片加载.png"]];
+        [iv sd_setImageWithURL:[NSURL URLWithString:_urlArr[i]] placeholderImage:[UIImage imageNamed:@"H_默认图片加载.png"]];
         [self.view addSubview:iv];
     }
     
@@ -62,8 +65,8 @@
 }
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
-    NSUInteger index = [_IVArr indexOfObject:gestureRecognizer.view];
-    [HeeePhotoBrowser showPhotoBrowserWithImageView:_IVArr clickImageIndex:index andHighQualityImageArray:_urlArr];
+    NSUInteger currentIndex = [_IVArr indexOfObject:gestureRecognizer.view];
+    [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:currentIndex highQualityImageArray:_urlArr andPreLoadImageNumber:2];
 }
 
 - (void)nextBtnClick {

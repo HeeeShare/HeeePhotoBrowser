@@ -6,11 +6,13 @@
 //  Copyright © 2018年 hgy. All rights reserved.
 //
 
+#define ScreenHeight [UIScreen mainScreen].bounds.size.height
+
 #import "HeeePhotoDetectingImageView.h"
 #import "HeeePhotoBrowser.h"
 #import "HeeePhotoView.h"
 
-@interface HeeePhotoDetectingImageView()
+@interface HeeePhotoDetectingImageView()<UIGestureRecognizerDelegate>
 @property (nonatomic,assign) CGPoint lastPoint;
 @property (nonatomic,assign) BOOL movable;//防止左右滑的时候，同时可以上下滑
 @property (nonatomic,assign) CGPoint originalPoint;
@@ -18,8 +20,7 @@
 @property (nonatomic,assign) CGFloat deviationX;
 @property (nonatomic,assign) CGFloat deviationY;
 @property (nonatomic,assign) BOOL isSetAnchor;
-@property (nonatomic,assign) CGFloat screenWidth;
-@property (nonatomic,assign) CGFloat screenHeight;
+@property (nonatomic,assign) BOOL endPullFlag;
 
 @end
 
@@ -28,8 +29,6 @@
 {
     self = [super init];
     if (self) {
-        _screenWidth = [UIScreen mainScreen].bounds.size.width;
-        _screenHeight = [UIScreen mainScreen].bounds.size.height;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidEnterBackground) name:UIApplicationWillResignActiveNotification object:nil];
     }
     
@@ -38,6 +37,17 @@
 
 - (void)appDidEnterBackground {
     [self touchesEnded:[NSSet new] withEvent:nil];
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        CGPoint point = [(UIPanGestureRecognizer *)gestureRecognizer translationInView:self];
+        if (self.fatherView.contentOffset.y == 0 && point.y > 0) {
+            self.fatherView.canCancelContentTouches = NO;
+        }
+    }
+    
+    return YES;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -70,6 +80,7 @@
             [self setAnchorPoint:CGPointMake(self.transform.a*pointInSelf.x/self.frame.size.width, self.transform.a*pointInSelf.y/self.frame.size.height)];
         }
         
+        _endPullFlag = YES;
         self.fatherView.userInteractionEnabled = NO;
         self.fatherView.scrollEnabled = NO;
         [self.photoView closeGesture];
@@ -87,25 +98,27 @@
             currentDeviationFromBegin = 0;
         }
         
-        if (currentDeviationFromBegin >= _screenHeight - 100) {
-            currentDeviationFromBegin = _screenHeight - 100;
+        if (currentDeviationFromBegin >= ScreenHeight - 100) {
+            currentDeviationFromBegin = ScreenHeight - 100;
         }
         
-        CGFloat ration = 1 - currentDeviationFromBegin/_screenHeight;
+        CGFloat ration = 1 - currentDeviationFromBegin/ScreenHeight;
         [self.photoBrowser setClearRate:ration];
         self.transform = CGAffineTransformScale(self.originalTransform, ration, ration);
     }
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    if (_photoView.closePullGesture) {
-        return;
-    }
-    
+    _endPullFlag = NO;
     self.fatherView.userInteractionEnabled = YES;
+    self.fatherView.canCancelContentTouches = YES;
     self.fatherView.scrollEnabled = YES;
     [self.photoView openGesture];
     _isSetAnchor = NO;
+    
+    if (_photoView.closePullGesture) {
+        return;
+    }
     
     //初始化
     _lastPoint = CGPointZero;
@@ -131,12 +144,25 @@
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    if (_photoView.closePullGesture) {
-        return;
-    }
-    
+    self.movable = NO;
+    self.fatherView.scrollEnabled = YES;
     self.fatherView.userInteractionEnabled = YES;
+    self.fatherView.canCancelContentTouches = YES;
     [self.photoView openGesture];
+}
+
+- (void)endPull {
+    self.fatherView.userInteractionEnabled = YES;
+    self.fatherView.scrollEnabled = YES;
+    if (_endPullFlag) {
+        [self.photoBrowser setClearRate:1];
+        self.transform = self.originalTransform;
+        self.frame = self.originalFrame;
+        [self setAnchorPoint:CGPointMake(0.5, 0.5)];
+        [self.photoBrowser.scrollView setScrollEnabled:YES];
+        [self.photoView openGesture];
+        _endPullFlag = NO;
+    }
 }
 
 - (void)setAnchorPoint:(CGPoint)anchorPoint

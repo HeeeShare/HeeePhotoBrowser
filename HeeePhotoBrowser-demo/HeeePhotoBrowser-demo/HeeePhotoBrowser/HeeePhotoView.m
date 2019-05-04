@@ -7,22 +7,25 @@
 //
 
 #import "HeeePhotoView.h"
+#import "HeeeCircleView.h"
 
 @interface HeeePhotoView() <UIScrollViewDelegate>
 @property (nonatomic,strong) UITapGestureRecognizer *doubleTap;
 @property (nonatomic,strong) UITapGestureRecognizer *singleTap;
 @property (nonatomic,assign) CGFloat screenWidth;
 @property (nonatomic,assign) CGFloat screenHeight;
+@property (nonatomic,strong) HeeeCircleView *downloadProgressView;
 
 @end
 
 @implementation HeeePhotoView
-- (instancetype)initWithFrame:(CGRect)frame
-{
+- (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         _screenWidth = [UIScreen mainScreen].bounds.size.width;
         _screenHeight = [UIScreen mainScreen].bounds.size.height;
         [self addSubview:self.scrollview];
+        [self addSubview:self.downloadProgressView];
+        self.downloadProgressView.center = CGPointMake(_screenWidth/2, _screenHeight/2);
         self.scrollview.delaysContentTouches = NO;
         //添加单双击事件
         [self addGestureRecognizer:self.doubleTap];
@@ -32,8 +35,7 @@
     return self;
 }
 
-- (UIScrollView *)scrollview
-{
+- (UIScrollView *)scrollview {
     if (!_scrollview) {
         _scrollview = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
         if (@available(iOS 11.0, *)) {
@@ -48,11 +50,10 @@
     return _scrollview;
 }
 
-- (HeeePhotoDetectingImageView *)imageview
-{
+- (HeeePhotoDetectingImageView *)imageview {
     if (!_imageview) {
         _imageview = [[HeeePhotoDetectingImageView alloc] init];
-        _imageview.contentMode = UIViewContentModeScaleAspectFill;
+        _imageview.contentMode = UIViewContentModeScaleAspectFit;
         _imageview.clipsToBounds = YES;
         _imageview.photoView = self;
         _imageview.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
@@ -65,8 +66,7 @@
     return _imageview;
 }
 
-- (UITapGestureRecognizer *)doubleTap
-{
+- (UITapGestureRecognizer *)doubleTap {
     if (!_doubleTap) {
         _doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
         _doubleTap.numberOfTapsRequired = 2;
@@ -76,8 +76,7 @@
     return _doubleTap;
 }
 
-- (UITapGestureRecognizer *)singleTap
-{
+- (UITapGestureRecognizer *)singleTap {
     if (!_singleTap) {
         _singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
         _singleTap.numberOfTapsRequired = 1;
@@ -87,6 +86,21 @@
     }
     
     return _singleTap;
+}
+
+- (HeeeCircleView *)downloadProgressView {
+    if (!_downloadProgressView) {
+        _downloadProgressView = [[HeeeCircleView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
+        _downloadProgressView.userInteractionEnabled = NO;
+        _downloadProgressView.circleColor = [UIColor colorWithWhite:0.8 alpha:1.0];
+        _downloadProgressView.layer.cornerRadius = 20;
+        _downloadProgressView.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.3].CGColor;
+        _downloadProgressView.layer.borderWidth = 3;
+        _downloadProgressView.lineWidth = 3;
+        _downloadProgressView.isRoundLineCap = YES;
+    }
+    
+    return _downloadProgressView;
 }
 
 -(void)closeGesture {
@@ -99,63 +113,67 @@
     self.doubleTap.enabled = YES;
 }
 
-- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock{
-        __weak typeof (self) weakSelf = self;
-    [weakSelf.imageview sd_setImageWithURL:url placeholderImage:placeholder completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            if (image) {
-                if (completedBlock) {
-                    completedBlock(image,error,cacheType,imageURL);
-                }
-                
-                //更新新下载图片的frame
-                CGPoint centerPoint = weakSelf.imageview.center;
-                CGFloat W = weakSelf.screenWidth*weakSelf.imageview.transform.a;
-                CGFloat H = W*image.size.height/image.size.width;
-                weakSelf.imageview.frame = CGRectMake(0, 0, W, H);
-                weakSelf.imageview.center = centerPoint;
-                weakSelf.imageview.originalFrame = CGRectMake(0, (weakSelf.screenHeight - H)/2, weakSelf.screenWidth, weakSelf.screenWidth*H/W);
-                
-                if (weakSelf.imageview.originalFrame.size.height > weakSelf.screenHeight) {
-                    weakSelf.scrollview.delaysContentTouches = YES;
-                }else{
-                    weakSelf.scrollview.delaysContentTouches = NO;
-                }
+- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock {
+    _didHandleImageDownload = YES;
+    
+    __weak typeof (self) weakSelf = self;
+    [weakSelf.imageview sd_setImageWithPreviousCachedImageWithURL:url placeholderImage:placeholder options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+        [weakSelf bringSubviewToFront:weakSelf.downloadProgressView];
+        weakSelf.downloadProgressView.hidden = NO;
+        weakSelf.downloadProgressView.progress = (CGFloat)receivedSize/(CGFloat)expectedSize;
+        [weakSelf.downloadProgressView createCircleAnimate:NO];
+    } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+        if (error) {
+            weakSelf.didHandleImageDownload = NO;
+        }
+        
+        if (image) {
+            weakSelf.downloadProgressView.hidden = YES;
+            
+            if (completedBlock) {
+                completedBlock(image,error,cacheType,imageURL);
             }
+            
+            [weakSelf layoutSubviews];
+            //更新新下载图片的frame
+            CGPoint centerPoint = weakSelf.imageview.center;
+            CGFloat W = weakSelf.screenWidth*weakSelf.imageview.transform.a;
+            CGFloat H = W*image.size.height/image.size.width;
+            weakSelf.imageview.frame = CGRectMake(0, 0, W, H);
+            weakSelf.imageview.center = centerPoint;
+            weakSelf.imageview.originalFrame = CGRectMake(0, (weakSelf.screenHeight - H)/2, weakSelf.screenWidth, weakSelf.screenWidth*H/W);
+        }else{
+            weakSelf.didHandleImageDownload = NO;
+        }
     }];
 }
 
 #pragma mark - 双击处理
-- (void)handleDoubleTap:(UITapGestureRecognizer *)recognizer
-{
+- (void)handleDoubleTap:(UITapGestureRecognizer *)recognizer {
     CGPoint touchPoint = [recognizer locationInView:self];
     if (self.scrollview.zoomScale <= 1.0) {
-        
         CGFloat scaleX = touchPoint.x + self.scrollview.contentOffset.x;//需要放大的图片的X点
         CGFloat sacleY = touchPoint.y + self.scrollview.contentOffset.y;//需要放大的图片的Y点
         [self.scrollview zoomToRect:CGRectMake(scaleX, sacleY, 10, 10) animated:YES];
-        
     } else {
         [self.scrollview setZoomScale:1.0 animated:YES]; //还原
     }
 }
 
 #pragma mark - 单击处理
-- (void)handleSingleTap:(UITapGestureRecognizer *)recognizer
-{
+- (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
     if (self.singleTapBlock) {
         self.singleTapBlock(recognizer);
     }
 }
 
-- (void)layoutSubviews
-{
+- (void)layoutSubviews {
     [super layoutSubviews];
     _scrollview.frame = self.bounds;
     [self adjustFrames];
 }
 
-- (void)adjustFrames
-{
+- (void)adjustFrames {
     CGRect frame = self.scrollview.frame;
     if (self.imageview.image) {
         CGSize imageSize = self.imageview.image.size;
@@ -198,8 +216,7 @@
     self.scrollview.contentOffset = CGPointZero;
 }
 
-- (CGPoint)centerOfScrollViewContent:(UIScrollView *)scrollView
-{
+- (CGPoint)centerOfScrollViewContent:(UIScrollView *)scrollView {
     CGFloat offsetX = (scrollView.bounds.size.width > scrollView.contentSize.width)?
     (scrollView.bounds.size.width - scrollView.contentSize.width) * 0.5 : 0.0;
     CGFloat offsetY = (scrollView.bounds.size.height > scrollView.contentSize.height)?
@@ -210,23 +227,22 @@
 }
 
 #pragma mark - UIScrollViewDelegate
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
-{
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
     return self.imageview;
 }
 
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView
-{
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     self.imageview.center = [self centerOfScrollViewContent:scrollView];
-    
-    if (self.imageview.frame.size.height > _screenHeight) {
-        self.scrollview.delaysContentTouches = YES;
-    }else{
-        self.scrollview.delaysContentTouches = NO;
-    }
+    [self.imageview endPull];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (scrollView.contentOffset.y == 0) {
+        scrollView.delaysContentTouches = NO;
+    }else{
+        scrollView.delaysContentTouches = YES;
+    }
+    
     _closePullGesture = YES;
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -235,4 +251,3 @@
 }
 
 @end
-

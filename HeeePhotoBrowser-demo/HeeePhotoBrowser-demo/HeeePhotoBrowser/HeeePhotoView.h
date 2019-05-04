@@ -14,10 +14,9 @@
 @interface HeeePhotoView : UIView
 @property (nonatomic,strong) UIScrollView *scrollview;
 @property (nonatomic,strong) HeeePhotoDetectingImageView *imageview;
-@property (nonatomic,assign) BOOL beginLoadingImage;
 @property (nonatomic,  weak) HeeePhotoBrowser *photoBrowser;
-@property (nonatomic,assign) BOOL isCloseScrollViewInteracte;
 @property (nonatomic,assign) BOOL closePullGesture;//当图还在滑动时，关闭滑掉图片的操作
+@property (nonatomic,assign) BOOL didHandleImageDownload;//是否下载过图片标志。如果下载失败，则重置为NO。
 
 //单击回调
 @property (nonatomic, strong) void (^singleTapBlock)(UITapGestureRecognizer *recognizer);

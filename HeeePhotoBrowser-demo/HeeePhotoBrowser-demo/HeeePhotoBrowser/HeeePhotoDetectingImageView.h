@@ -16,4 +16,5 @@
 @property (nonatomic,weak) UIScrollView *fatherView;
 @property (nonatomic,assign) CGRect originalFrame;
 
+- (void)endPull;
 @end

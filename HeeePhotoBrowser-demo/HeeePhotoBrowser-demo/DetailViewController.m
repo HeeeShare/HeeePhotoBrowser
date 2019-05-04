@@ -46,14 +46,14 @@
         iv.userInteractionEnabled = YES;
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageClick:)];
         [iv addGestureRecognizer:tap];
-        [iv sd_setImageWithURL:[NSURL URLWithString:urlArr[i]] placeholderImage:[UIImage imageNamed:@"默认图片加载.png"]];
+        [iv sd_setImageWithURL:[NSURL URLWithString:urlArr[i]] placeholderImage:[UIImage imageNamed:@"H_默认图片加载.png"]];
         [self.view addSubview:iv];
     }
 }
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
-    UIView *IV = gestureRecognizer.view;    
-    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showPhotoBrowserWithImageView:_IVArr clickImageIndex:[_IVArr indexOfObject:IV] andHighQualityImageArray:nil];
+    UIView *IV = gestureRecognizer.view;
+    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:[_IVArr indexOfObject:IV] highQualityImageArray:nil andPreLoadImageNumber:2];
     photoBrowser.delegate = self;
 }
 
