@@ -16,7 +16,7 @@
 @property (nonatomic,strong) HeeePhotoDetectingImageView *imageview;
 @property (nonatomic,  weak) HeeePhotoBrowser *photoBrowser;
 @property (nonatomic,assign) BOOL closePullGesture;//当图还在滑动时，关闭滑掉图片的操作
-@property (nonatomic,assign) BOOL didHandleImageDownload;//是否下载过图片标志。如果下载失败，则重置为NO。
+@property (nonatomic,assign) BOOL shouldDownloadImage;//是否需要下载图片。
 
 //单击回调
 @property (nonatomic, strong) void (^singleTapBlock)(UITapGestureRecognizer *recognizer);
@@ -25,5 +25,6 @@
 
 - (void)closeGesture;//防止上下滑的时候，同时可以单双击
 - (void)openGesture;
+- (void)hideDownloadProgressView;
 
 @end

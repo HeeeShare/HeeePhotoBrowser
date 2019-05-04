@@ -7,7 +7,6 @@
 //
 
 #define kUIScreen_width [[UIScreen mainScreen] bounds].size.width
-#define kUIScreen_height [[UIScreen mainScreen] bounds].size.height
 
 #import "ViewController.h"
 #import "UIImageView+WebCache.h"

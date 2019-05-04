@@ -23,6 +23,7 @@
     if (self = [super initWithFrame:frame]) {
         _screenWidth = [UIScreen mainScreen].bounds.size.width;
         _screenHeight = [UIScreen mainScreen].bounds.size.height;
+        _shouldDownloadImage = YES;
         [self addSubview:self.scrollview];
         [self addSubview:self.downloadProgressView];
         self.downloadProgressView.center = CGPointMake(_screenWidth/2, _screenHeight/2);
@@ -113,8 +114,13 @@
     self.doubleTap.enabled = YES;
 }
 
+- (void)hideDownloadProgressView {
+    self.downloadProgressView.hidden = YES;
+    _shouldDownloadImage = NO;
+}
+
 - (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock {
-    _didHandleImageDownload = YES;
+    _shouldDownloadImage = NO;
     
     __weak typeof (self) weakSelf = self;
     [weakSelf.imageview sd_setImageWithPreviousCachedImageWithURL:url placeholderImage:placeholder options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize) {
@@ -124,7 +130,7 @@
         [weakSelf.downloadProgressView createCircleAnimate:NO];
     } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
         if (error) {
-            weakSelf.didHandleImageDownload = NO;
+            weakSelf.shouldDownloadImage = YES;
         }
         
         if (image) {
@@ -143,7 +149,7 @@
             weakSelf.imageview.center = centerPoint;
             weakSelf.imageview.originalFrame = CGRectMake(0, (weakSelf.screenHeight - H)/2, weakSelf.screenWidth, weakSelf.screenWidth*H/W);
         }else{
-            weakSelf.didHandleImageDownload = NO;
+            weakSelf.shouldDownloadImage = YES;
         }
     }];
 }

@@ -24,6 +24,7 @@
 @property (nonatomic,assign) CGFloat screenWidth;
 @property (nonatomic,assign) CGFloat screenHeight;
 @property (nonatomic,assign) NSUInteger preLoadImageNumber;
+
 @end
 
 @implementation HeeePhotoBrowser
@@ -131,6 +132,9 @@
     for (int i = 0; i < self.imageViewArray.count; i++) {
         HeeePhotoView *view = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
         [self.allPhotoView addObject:view];
+        if (_highQualityImageArr.count <= i) {
+            [view hideDownloadProgressView];
+        }
         view.tag = 100 + i;
         view.imageview.tag = i;
         view.photoBrowser = self;
@@ -210,14 +214,20 @@
 
 - (void)handleImageDownload {
     __weak typeof (self) weakSelf = self;
-    NSInteger k = (NSInteger)(_currentIndex - _preLoadImageNumber);
-    if (k < 0) {
-        k = 0;
+    NSInteger start = (NSInteger)(_currentIndex - _preLoadImageNumber);
+    if (start < 0) {
+        start = 0;
     }
-    for (NSInteger i = k; i <= _currentIndex + _preLoadImageNumber; i++) {
+    
+    NSInteger end = (NSInteger)(_currentIndex + _preLoadImageNumber + 1);
+    if (end >= MAX(self.imageViewArray.count, self.highQualityImageArr.count)) {
+        end = MAX(self.imageViewArray.count, self.highQualityImageArr.count);
+    }
+    
+    for (NSInteger i = start; i < end; i++) {
         if (_highQualityImageArr.count > i) {
             HeeePhotoView *photoView = _allPhotoView[i];
-            if (!photoView.didHandleImageDownload) {
+            if (photoView.shouldDownloadImage) {
                 UIImage *placeholderImage = nil;
                 if (i < _imageViewArray.count) {
                     UIImageView *IV = self.imageViewArray[i];
