@@ -27,7 +27,7 @@
     _IVArr = [NSMutableArray array];
     
     NSArray *urlArr = @[
-                        @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1541153925255&di=068103a39c73a6b5bdbe57402a40755f&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01641f5a61925fa80120121fef7c46.jpg%401280w_1l_2o_100sh.jpg",
+                        @"http://t7.baidu.com/it/u=3204887199,3790688592&fm=79&app=86&f=JPEG?w=4610&h=2968",
                         @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1525461180197&di=a23a9834a7b431c9c576f1b35bdb2298&imgtype=jpg&src=http%3A%2F%2Fimg0.imgtn.bdimg.com%2Fit%2Fu%3D3564877025%2C796183547%26fm%3D214%26gp%3D0.jpg",
                         @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1525461301631&di=fc9f49499318ba398a469f4be601b516&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2Fa%2F55f8c18720263.jpg",
                         @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1525461151728&di=2460be17ebf7d1ea7526ef25e00c6b76&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2F5%2F532931489604e.jpg",
