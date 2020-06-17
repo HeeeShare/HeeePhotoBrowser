@@ -9,6 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface DetailViewController : UIViewController
-@property (nonatomic,strong) UIWindow *heighLevelWindow;
 
 @end

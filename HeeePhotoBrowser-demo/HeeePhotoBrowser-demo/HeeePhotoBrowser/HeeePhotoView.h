@@ -14,7 +14,7 @@
 @interface HeeePhotoView : UIView
 @property (nonatomic,strong) UIScrollView *scrollview;
 @property (nonatomic,strong) HeeePhotoDetectingImageView *imageview;
-@property (nonatomic,  weak) HeeePhotoBrowser *photoBrowser;
+@property (nonatomic,weak) HeeePhotoBrowser *photoBrowser;
 @property (nonatomic,assign) BOOL closePullGesture;//当图还在滑动时，关闭滑掉图片的操作
 @property (nonatomic,assign) BOOL shouldDownloadImage;//是否需要下载图片。
 @property (nonatomic,copy) void (^longPressBlock)(void);

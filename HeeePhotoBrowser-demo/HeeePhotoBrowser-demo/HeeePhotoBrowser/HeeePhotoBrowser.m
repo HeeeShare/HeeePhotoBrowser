@@ -11,8 +11,8 @@
 #import "UIImageView+WebCache.h"
 #import "HeeePhotoDetectingImageView.h"
 
-@interface HeeePhotoBrowser ()<UIScrollViewDelegate,UIActionSheetDelegate>
-@property (nonatomic,strong) UIWindow *window;
+@interface HeeePhotoBrowser ()<UIScrollViewDelegate>
+@property (nonatomic,strong) UIScrollView *scrollView;
 @property (nonatomic,strong) NSMutableArray *allPhotoView;
 @property (nonatomic,strong) UIImageView *animationIV;//用于动画
 @property (nonatomic,strong) NSMutableArray *NFrameArr;//新IV的frame数组
@@ -66,18 +66,13 @@
         _animationIV.contentMode = UIViewContentModeScaleAspectFill;
         _animationIV.hidden = YES;
         [self addSubview:_animationIV];
-        
-        _window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        _window.hidden = YES;
-        _window.backgroundColor = [UIColor clearColor];
-        _window.windowLevel = UIWindowLevelAlert;
     }
     
     return self;
 }
 
 - (CGRect)getFatherViewFrame:(UIView *)view {
-    return [_fatherView convertRect:view.frame toCoordinateSpace:_window];
+    return [_fatherView convertRect:view.frame toCoordinateSpace:self];
 }
 
 - (void)setImageViewArray:(NSArray *)imageViewArray {
@@ -179,9 +174,10 @@
         [weakSelf hidePhotoBrowser:recognizer];
     };
     
+    NSUInteger index = photoView.tag - 100;
     photoView.longPressBlock = ^{
         if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)]) {
-            [weakSelf.delegate photoBrowser:weakSelf didLongPressAtIndex:photoView.tag - 100];
+            [weakSelf.delegate photoBrowser:weakSelf didLongPressAtIndex:index];
         }
     };
     
@@ -221,7 +217,7 @@
     
     //iphone X
     if (@available(iOS 11.0, *)) {
-        if ([[UIApplication sharedApplication].delegate window].safeAreaInsets.bottom == 34) {
+        if ([UIApplication sharedApplication].keyWindow.safeAreaInsets.bottom == 34) {
             _indexLabel.center = CGPointMake(_screenWidth*0.5, 24 + 34);
         }
     }
@@ -264,9 +260,12 @@
     }
 }
 
+- (void)setScrollEnabled:(BOOL)scrollEnabled {
+    [self.scrollView setScrollEnabled:scrollEnabled];
+}
+
 - (void)show {
-    _window.hidden = NO;
-    [_window addSubview:self];
+    [[UIApplication sharedApplication].keyWindow addSubview:self];
     HeeePhotoView *view = [_scrollView viewWithTag:100 + _currentIndex];
     view.hidden = YES;
     
@@ -309,7 +308,7 @@
         UIImageView *IV = self.imageViewArray[self.currentIndex];
         
         //更新animationIV的frame
-        _animationIV.frame = [view.scrollview convertRect:view.imageview.frame toCoordinateSpace:_window];
+        _animationIV.frame = [view.scrollview convertRect:view.imageview.frame toCoordinateSpace:self];
         _animationIV.hidden = NO;
         
         [UIView animateWithDuration:0.25 animations:^{
@@ -321,7 +320,6 @@
             IV.alpha = 1;
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                self.window.hidden = YES;
                 [self removeFromSuperview];
             });
         }];
@@ -329,7 +327,6 @@
         [UIView animateWithDuration:0.25 animations:^{
             self.alpha = 0;
         } completion:^(BOOL finished) {
-            self.window.hidden = YES;
             [self removeFromSuperview];
         }];
     }
@@ -354,7 +351,6 @@
             IV.alpha = 1;
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                self.window.hidden = YES;
                 [self removeFromSuperview];
             });
         }];
@@ -362,7 +358,6 @@
         [UIView animateWithDuration:0.25 animations:^{
             self.alpha = 0;
         } completion:^(BOOL finished) {
-            self.window.hidden = YES;
             [self removeFromSuperview];
         }];
     }

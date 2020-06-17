@@ -17,13 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index;
-- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser endDragImageAtIndex:(NSInteger)index close:(BOOL)close;//close是否会关闭photoBrowser
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser endDragImageAtIndex:(NSInteger)index close:(BOOL)close;//close表示结束拖拽后是否会关闭photoBrowser
 
 @end
 
 @interface HeeePhotoBrowser : UIView
-@property (nonatomic,weak) UIViewController *vc;
-@property (nonatomic,strong) UIScrollView *scrollView;
+- (void)setScrollEnabled:(BOOL)scrollEnabled;
 - (void)setClearRate:(CGFloat)rate;
 - (void)hidePhotoBrowserWithFrame:(CGRect)frame;
 

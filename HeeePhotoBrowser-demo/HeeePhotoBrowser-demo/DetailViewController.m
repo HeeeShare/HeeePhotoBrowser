@@ -57,7 +57,7 @@
 
 #pragma mark - HeeePhotoBrowserDelegate
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index {
-    NSLog(@"已经展示第%ld张图片",index);
+    NSLog(@"已经展示第%zd张图片",index);
 }
 
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didDisappearAtIndex:(NSInteger)index {
@@ -65,15 +65,15 @@
 }
 
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index {
-    NSLog(@"长按了第%ld张图片",index);
+    NSLog(@"长按了第%zd张图片",index);
 }
 
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index {
-    NSLog(@"开始拖动第%ld张图片",index);
+    NSLog(@"开始拖动第%zd张图片",index);
 }
 
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser endDragImageAtIndex:(NSInteger)index close:(BOOL)close {
-    NSLog(@"第%ld张图片拖动结束",index);
+    NSLog(@"第%zd张图片拖动结束",index);
     
     if (close) {
         NSLog(@"浏览器将要消失");

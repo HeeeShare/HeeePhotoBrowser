@@ -87,7 +87,7 @@
         _deviationY = point.y - _lastPoint.y;
         _lastPoint = point;
         _movable = YES;
-        [self.photoBrowser.scrollView setScrollEnabled:NO];//关闭左右滑动
+        [self.photoBrowser setScrollEnabled:NO];//关闭左右滑动
         
         self.center = CGPointMake(self.center.x + _deviationX, self.center.y + _deviationY);
         
@@ -142,7 +142,7 @@
             self.frame = self.originalFrame;
         }completion:^(BOOL finished) {
             [self setAnchorPoint:CGPointMake(0.5, 0.5)];
-            [self.photoBrowser.scrollView setScrollEnabled:YES];
+            [self.photoBrowser setScrollEnabled:YES];
             self.movable = NO;
         }];
         
@@ -153,15 +153,7 @@
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    if (_moving && self.endDragImage) {
-        self.endDragImage(NO);
-    }
-    _movable = NO;
-    _moving = NO;
-    self.fatherView.scrollEnabled = YES;
-    self.fatherView.userInteractionEnabled = YES;
-    self.fatherView.canCancelContentTouches = YES;
-    [self.photoView openGesture];
+    [self touchesEnded:[NSSet new] withEvent:nil];
 }
 
 - (void)endPull {
@@ -172,7 +164,7 @@
         self.transform = self.originalTransform;
         self.frame = self.originalFrame;
         [self setAnchorPoint:CGPointMake(0.5, 0.5)];
-        [self.photoBrowser.scrollView setScrollEnabled:YES];
+        [self.photoBrowser setScrollEnabled:YES];
         [self.photoView openGesture];
         _endPullFlag = NO;
     }
