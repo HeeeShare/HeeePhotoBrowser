@@ -5,8 +5,6 @@
 //  Created by hgy on 2018/10/17.
 //  Copyright © 2018年 hgy. All rights reserved.
 //
-#define kUIScreen_width [[UIScreen mainScreen] bounds].size.width
-#define kUIScreen_height [[UIScreen mainScreen] bounds].size.height
 
 #import "DetailViewController.h"
 #import "HeeePhotoBrowser.h"
@@ -35,7 +33,7 @@
                         @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1539781470113&di=2d4e9600e7580773870ebb6b063b7173&imgtype=0&src=http%3A%2F%2Fimg2.ddove.com%2Fupload%2F20120906%2F060740261074.jpg"
                         ];
     
-    CGFloat w = (kUIScreen_width - 2*10 - 2*5)/3;
+    CGFloat w = ([[UIScreen mainScreen] bounds].size.width - 2*10 - 2*5)/3;
     CGFloat h = w*3/4;
     
     for (int i = 0; i < urlArr.count; i++) {
@@ -58,17 +56,30 @@
 }
 
 #pragma mark - HeeePhotoBrowserDelegate
-- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didScrollToIndex:(NSInteger)index {
-    
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index {
+    NSLog(@"已经展示第%ld张图片",index);
 }
 
-- (void)photoBrowserDidDisappear:(HeeePhotoBrowser *)photoBrowser {
-    
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didDisappearAtIndex:(NSInteger)index {
+    NSLog(@"浏览器已经消失");
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index {
+    NSLog(@"长按了第%ld张图片",index);
+}
+
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index {
+    NSLog(@"开始拖动第%ld张图片",index);
+}
+
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser endDragImageAtIndex:(NSInteger)index close:(BOOL)close {
+    NSLog(@"第%ld张图片拖动结束",index);
+    
+    if (close) {
+        NSLog(@"浏览器将要消失");
+    }else{
+        NSLog(@"浏览器不会消失");
+    }
 }
 
 @end

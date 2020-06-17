@@ -12,9 +12,11 @@
 @interface HeeePhotoView() <UIScrollViewDelegate>
 @property (nonatomic,strong) UITapGestureRecognizer *doubleTap;
 @property (nonatomic,strong) UITapGestureRecognizer *singleTap;
+@property (nonatomic,strong) UILongPressGestureRecognizer *longPress;
 @property (nonatomic,assign) CGFloat screenWidth;
 @property (nonatomic,assign) CGFloat screenHeight;
 @property (nonatomic,strong) HeeeCircleView *downloadProgressView;
+@property (nonatomic,copy) NSURL *imageUrl;
 
 @end
 
@@ -28,9 +30,10 @@
         [self addSubview:self.downloadProgressView];
         self.downloadProgressView.center = CGPointMake(_screenWidth/2, _screenHeight/2);
         self.scrollview.delaysContentTouches = NO;
-        //添加单双击事件
+        //添加手势
         [self addGestureRecognizer:self.doubleTap];
         [self addGestureRecognizer:self.singleTap];
+        [self addGestureRecognizer:self.longPress];
     }
     
     return self;
@@ -62,6 +65,15 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.imageview.photoBrowser = self.photoBrowser;
         });
+        
+        __weak __typeof(self) weakSelf = self;
+        _imageview.startDragImage = ^{
+            !weakSelf.startDragImage?:weakSelf.startDragImage();
+        };
+        
+        _imageview.endDragImage = ^(BOOL close) {
+            !weakSelf.endDragImage?:weakSelf.endDragImage(close);
+        };
     }
     
     return _imageview;
@@ -89,6 +101,15 @@
     return _singleTap;
 }
 
+- (UILongPressGestureRecognizer *)longPress {
+    if (!_longPress) {
+        _longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress)];
+        _longPress.minimumPressDuration = 0.3;
+    }
+    
+    return _longPress;
+}
+
 - (HeeeCircleView *)downloadProgressView {
     if (!_downloadProgressView) {
         _downloadProgressView = [[HeeeCircleView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
@@ -107,11 +128,13 @@
 -(void)closeGesture {
     self.singleTap.enabled = NO;
     self.doubleTap.enabled = NO;
+    self.longPress.enabled = NO;
 }
 
 - (void)openGesture {
     self.singleTap.enabled = YES;
     self.doubleTap.enabled = YES;
+    self.longPress.enabled = YES;
 }
 
 - (void)hideDownloadProgressView {
@@ -121,6 +144,7 @@
 
 - (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock {
     _shouldDownloadImage = NO;
+    self.imageUrl = url;
     
     __weak typeof (self) weakSelf = self;
     [weakSelf.imageview sd_setImageWithPreviousCachedImageWithURL:url placeholderImage:placeholder options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize) {
@@ -140,7 +164,6 @@
                 completedBlock(image,error,cacheType,imageURL);
             }
             
-            [weakSelf layoutSubviews];
             //更新新下载图片的frame
             CGPoint centerPoint = weakSelf.imageview.center;
             CGFloat W = weakSelf.screenWidth*weakSelf.imageview.transform.a;
@@ -154,7 +177,7 @@
     }];
 }
 
-#pragma mark - 双击处理
+#pragma mark - 手势处理
 - (void)handleDoubleTap:(UITapGestureRecognizer *)recognizer {
     CGPoint touchPoint = [recognizer locationInView:self];
     if (self.scrollview.zoomScale <= 1.0) {
@@ -166,10 +189,15 @@
     }
 }
 
-#pragma mark - 单击处理
 - (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
     if (self.singleTapBlock) {
         self.singleTapBlock(recognizer);
+    }
+}
+
+- (void)handleLongPress {
+    if (self.longPress.state == UIGestureRecognizerStateBegan) {
+        !self.longPressBlock?:self.longPressBlock();
     }
 }
 

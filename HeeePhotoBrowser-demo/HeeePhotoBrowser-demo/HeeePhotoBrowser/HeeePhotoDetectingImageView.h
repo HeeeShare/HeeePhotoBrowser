@@ -15,6 +15,8 @@
 @property (nonatomic,weak) HeeePhotoView *photoView;
 @property (nonatomic,weak) UIScrollView *fatherView;
 @property (nonatomic,assign) CGRect originalFrame;
+@property (nonatomic,copy) void (^startDragImage) (void);
+@property (nonatomic,copy) void (^endDragImage) (BOOL close);
 
 - (void)endPull;
 @end

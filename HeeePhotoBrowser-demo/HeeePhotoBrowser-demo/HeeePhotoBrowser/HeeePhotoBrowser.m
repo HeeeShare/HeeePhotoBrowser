@@ -46,8 +46,8 @@
 }
 
 - (void)removeFromSuperview {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowserDidDisappear:)]) {
-        [self.delegate photoBrowserDidDisappear:self];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didDisappearAtIndex:)]) {
+        [self.delegate photoBrowser:self didDisappearAtIndex:self.currentIndex];
     }
     
     [super removeFromSuperview];
@@ -101,7 +101,9 @@
         _indexLabel.clipsToBounds = YES;
         
         if (self.imageViewArray.count > 0) {
-            _indexLabel.text = [NSString stringWithFormat:@"1/%d", MAX((int)self.imageViewArray.count, (int)self.highQualityImageArr.count)];
+            NSUInteger totalImage = MAX(self.imageViewArray.count, self.highQualityImageArr.count);
+            _indexLabel.text = [NSString stringWithFormat:@"1/%zd", totalImage];
+            _indexLabel.hidden = totalImage>1?0:1;
         }
     }
     
@@ -116,9 +118,7 @@
     return _allPhotoView;
 }
 
-- (void)addScrollView
-{
-    __weak typeof (self) weakSelf = self;
+- (void)addScrollView {
     _scrollView = [[UIScrollView alloc] init];
     _scrollView.delaysContentTouches = NO;
     _scrollView.frame = self.bounds;
@@ -130,16 +130,16 @@
     [self addSubview:_scrollView];
     
     for (int i = 0; i < self.imageViewArray.count; i++) {
-        HeeePhotoView *view = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
-        [self.allPhotoView addObject:view];
+        HeeePhotoView *photoView = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
+        [self.allPhotoView addObject:photoView];
         if (_highQualityImageArr.count <= i) {
-            [view hideDownloadProgressView];
+            [photoView hideDownloadProgressView];
         }
-        view.tag = 100 + i;
-        view.imageview.tag = i;
-        view.photoBrowser = self;
+        photoView.tag = 100 + i;
+        photoView.imageview.tag = i;
+        photoView.photoBrowser = self;
         UIImageView *IV = self.imageViewArray[i];
-        view.imageview.image = IV.image;
+        photoView.imageview.image = IV.image;
         
         CGFloat W = _screenWidth;
         CGFloat H = W*IV.image.size.height/IV.image.size.width;
@@ -148,42 +148,57 @@
             H = 9*W/16;
         }
         
+        [self handlePhotoViewBlockEnvent:photoView];
         [_NFrameArr addObject:[NSValue valueWithCGRect:CGRectMake(0, (_screenHeight - H)/2, W, H)]];
-        
-        //处理单击
-        view.singleTapBlock = ^(UITapGestureRecognizer *recognizer){
-            [weakSelf hidePhotoBrowser:recognizer];
-        };
         
         if (_currentIndex == i) {
             _animationIV.image = IV.image;
             _animationIV.frame = [self getFatherViewFrame:_imageViewArray[i]];
         }
-        [_scrollView addSubview:view];
+        [_scrollView addSubview:photoView];
     }
     
     if (_highQualityImageArr.count > _imageViewArray.count) {
         for (NSUInteger i = _imageViewArray.count; i < _highQualityImageArr.count; i++) {
-            HeeePhotoView *view = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
-            [self.allPhotoView addObject:view];
-            view.tag = 100 + i;
-            view.imageview.tag = i;
-            view.photoBrowser = self;
-            
-            //处理单击
-            view.singleTapBlock = ^(UITapGestureRecognizer *recognizer){
-                [weakSelf hidePhotoBrowser:recognizer];
-            };
-            
-            [_scrollView addSubview:view];
+            HeeePhotoView *photoView = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
+            [self handlePhotoViewBlockEnvent:photoView];
+            [self.allPhotoView addObject:photoView];
+            photoView.tag = 100 + i;
+            photoView.imageview.tag = i;
+            photoView.photoBrowser = self;
+            [_scrollView addSubview:photoView];
         }
     }
     
     [self handleImageDownload];
 }
 
-- (void)setUpFrames
-{
+- (void)handlePhotoViewBlockEnvent:(HeeePhotoView *)photoView {
+    __weak __typeof(self) weakSelf = self;
+    photoView.singleTapBlock = ^(UITapGestureRecognizer *recognizer){
+        [weakSelf hidePhotoBrowser:recognizer];
+    };
+    
+    photoView.longPressBlock = ^{
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)]) {
+            [weakSelf.delegate photoBrowser:weakSelf didLongPressAtIndex:photoView.tag - 100];
+        }
+    };
+    
+    photoView.startDragImage = ^{
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:startDragImageAtIndex:)]) {
+            [weakSelf.delegate photoBrowser:weakSelf startDragImageAtIndex:weakSelf.currentIndex];
+        }
+    };
+    
+    photoView.endDragImage = ^(BOOL close) {
+        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:endDragImageAtIndex:close:)]) {
+            [weakSelf.delegate photoBrowser:weakSelf endDragImageAtIndex:weakSelf.currentIndex close:close];
+        }
+    };
+}
+
+- (void)setUpFrames {
     CGRect rect = self.bounds;
     rect.size.width += 10 * 2;
     _scrollView.bounds = rect;
@@ -274,6 +289,9 @@
     } completion:^(BOOL finished) {
         self.animationIV.hidden = YES;
         view.hidden = NO;
+        if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didShowImageAtIndex:)]) {
+            [self.delegate photoBrowser:self didShowImageAtIndex:self.currentIndex];
+        }
     }];
 }
 
@@ -351,16 +369,14 @@
 }
 
 #pragma mark - UIScrollViewDelegate
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     int index = (scrollView.contentOffset.x + _scrollView.bounds.size.width * 0.5) / _scrollView.bounds.size.width;
     if (index >= 0 && index < MAX(self.imageViewArray.count, self.highQualityImageArr.count)) {
         _indexLabel.text = [NSString stringWithFormat:@"%d/%d", index + 1, MAX((int)self.imageViewArray.count, (int)self.highQualityImageArr.count)];
     }
 }
 
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
-{
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     int autualIndex = scrollView.contentOffset.x/_scrollView.bounds.size.width;
     //设置当前下标
     self.currentIndex = autualIndex;
@@ -393,8 +409,8 @@
         _animationIV.frame = frameValue.CGRectValue;
     }
     
-    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:didScrollToIndex:)]) {
-        [_delegate photoBrowser:self didScrollToIndex:autualIndex];
+    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:didShowImageAtIndex:)]) {
+        [_delegate photoBrowser:self didShowImageAtIndex:autualIndex];
     }
 }
 

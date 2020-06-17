@@ -6,8 +6,6 @@
 //  Copyright © 2018年 hgy. All rights reserved.
 //
 
-#define kUIScreen_width [[UIScreen mainScreen] bounds].size.width
-
 #import "ViewController.h"
 #import "UIImageView+WebCache.h"
 #import "HeeePhotoBrowser.h"
@@ -35,6 +33,7 @@
                 @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1539781470113&di=2d4e9600e7580773870ebb6b063b7173&imgtype=0&src=http%3A%2F%2Fimg2.ddove.com%2Fupload%2F20120906%2F060740261074.jpg"
                 ];
     
+    CGFloat kUIScreen_width = [[UIScreen mainScreen] bounds].size.width;
     CGFloat w = (kUIScreen_width - 2*10 - 2*5)/3;
     CGFloat h = w*3/4;
     

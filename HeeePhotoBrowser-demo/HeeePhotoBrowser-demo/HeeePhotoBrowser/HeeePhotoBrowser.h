@@ -9,10 +9,15 @@
 #import <UIKit/UIKit.h>
 @class HeeePhotoBrowser;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @protocol HeeePhotoBrowserDelegate <NSObject>
 @optional
-- (void)photoBrowserDidDisappear:(HeeePhotoBrowser *)photoBrowser;
-- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didScrollToIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didDisappearAtIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser endDragImageAtIndex:(NSInteger)index close:(BOOL)close;//close是否会关闭photoBrowser
 
 @end
 
@@ -34,3 +39,5 @@
 @property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
 
 @end
+
+NS_ASSUME_NONNULL_END

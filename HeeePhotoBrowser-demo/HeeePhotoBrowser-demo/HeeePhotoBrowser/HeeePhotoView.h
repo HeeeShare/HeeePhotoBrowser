@@ -17,9 +17,10 @@
 @property (nonatomic,  weak) HeeePhotoBrowser *photoBrowser;
 @property (nonatomic,assign) BOOL closePullGesture;//当图还在滑动时，关闭滑掉图片的操作
 @property (nonatomic,assign) BOOL shouldDownloadImage;//是否需要下载图片。
-
-//单击回调
-@property (nonatomic, strong) void (^singleTapBlock)(UITapGestureRecognizer *recognizer);
+@property (nonatomic,copy) void (^longPressBlock)(void);
+@property (nonatomic,copy) void (^startDragImage) (void);
+@property (nonatomic,copy) void (^endDragImage) (BOOL close);
+@property (nonatomic,copy) void (^singleTapBlock)(UITapGestureRecognizer *recognizer);
 
 - (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock;
 

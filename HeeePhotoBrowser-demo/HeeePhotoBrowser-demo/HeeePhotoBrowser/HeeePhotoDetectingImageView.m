@@ -6,14 +6,13 @@
 //  Copyright © 2018年 hgy. All rights reserved.
 //
 
-#define ScreenHeight [UIScreen mainScreen].bounds.size.height
-
 #import "HeeePhotoDetectingImageView.h"
 #import "HeeePhotoBrowser.h"
 #import "HeeePhotoView.h"
 
 @interface HeeePhotoDetectingImageView()<UIGestureRecognizerDelegate>
 @property (nonatomic,assign) CGPoint lastPoint;
+@property (nonatomic,assign) BOOL moving;//开始滑动标志
 @property (nonatomic,assign) BOOL movable;//防止左右滑的时候，同时可以上下滑
 @property (nonatomic,assign) CGPoint originalPoint;
 @property (nonatomic,assign) CGAffineTransform originalTransform;
@@ -25,8 +24,7 @@
 @end
 
 @implementation HeeePhotoDetectingImageView
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidEnterBackground) name:UIApplicationWillResignActiveNotification object:nil];
@@ -98,6 +96,7 @@
             currentDeviationFromBegin = 0;
         }
         
+        CGFloat ScreenHeight = [UIScreen mainScreen].bounds.size.height;
         if (currentDeviationFromBegin >= ScreenHeight - 100) {
             currentDeviationFromBegin = ScreenHeight - 100;
         }
@@ -105,22 +104,27 @@
         CGFloat ration = 1 - currentDeviationFromBegin/ScreenHeight;
         [self.photoBrowser setClearRate:ration];
         self.transform = CGAffineTransformScale(self.originalTransform, ration, ration);
+        
+        if (!self.moving && self.startDragImage) {
+            self.startDragImage();
+        }
+        _moving = YES;
     }
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     _endPullFlag = NO;
+    _isSetAnchor = NO;
+    _moving = NO;
     self.fatherView.userInteractionEnabled = YES;
     self.fatherView.canCancelContentTouches = YES;
     self.fatherView.scrollEnabled = YES;
     [self.photoView openGesture];
-    _isSetAnchor = NO;
     
     if (_photoView.closePullGesture) {
         return;
     }
     
-    //初始化
     _lastPoint = CGPointZero;
     if (_movable == NO) return;
     
@@ -130,6 +134,7 @@
     if (_deviationY > 0 && point.y > self.originalPoint.y) {
         CGRect rect = [self.fatherView convertRect:self.frame toCoordinateSpace:[UIApplication sharedApplication].keyWindow];
         [self.photoBrowser hidePhotoBrowserWithFrame:rect];
+        !self.endDragImage?:self.endDragImage(YES);
     }else{
         [UIView animateWithDuration:0.25 animations:^{
             [self.photoBrowser setClearRate:1];
@@ -140,11 +145,19 @@
             [self.photoBrowser.scrollView setScrollEnabled:YES];
             self.movable = NO;
         }];
+        
+        if (self.endDragImage) {
+            self.endDragImage(NO);
+        }
     }
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
-    self.movable = NO;
+    if (_moving && self.endDragImage) {
+        self.endDragImage(NO);
+    }
+    _movable = NO;
+    _moving = NO;
     self.fatherView.scrollEnabled = YES;
     self.fatherView.userInteractionEnabled = YES;
     self.fatherView.canCancelContentTouches = YES;
@@ -165,8 +178,7 @@
     }
 }
 
-- (void)setAnchorPoint:(CGPoint)anchorPoint
-{
+- (void)setAnchorPoint:(CGPoint)anchorPoint {
     CGPoint oldOrigin = self.frame.origin;
     self.layer.anchorPoint = anchorPoint;
     CGPoint newOrigin = self.frame.origin;
