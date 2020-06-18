@@ -32,9 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param imageViewArray 包含所有需要展示的imageView
  @param currentIndex 第一次点击的图片位置
  @param highQualityImageArr 高清图url数组，可以多于imageViewArray里的imageView
- @param preLoadImageNumber 预加载图片数量，当前index左右两侧。
+ @param preLoadImageCount 预加载图片数量，当前index左右两侧。
  */
-+ (instancetype)showPhotoBrowserWithImageViews:(nonnull NSArray *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(nullable NSArray *)highQualityImageArr andPreLoadImageNumber:(NSUInteger)preLoadImageNumber;
++ (instancetype)showPhotoBrowserWithImageViews:(nonnull NSArray *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(nullable NSArray *)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount;
 @property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
 
 @end

@@ -23,19 +23,19 @@
 @property (nonatomic,strong) UILabel *indexLabel;
 @property (nonatomic,assign) CGFloat screenWidth;
 @property (nonatomic,assign) CGFloat screenHeight;
-@property (nonatomic,assign) NSUInteger preLoadImageNumber;
+@property (nonatomic,assign) NSUInteger preLoadImageCount;
 
 @end
 
 @implementation HeeePhotoBrowser
-+ (instancetype)showPhotoBrowserWithImageViews:(NSArray *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray *)highQualityImageArr andPreLoadImageNumber:(NSUInteger)preLoadImageNumber {
++ (instancetype)showPhotoBrowserWithImageViews:(NSArray *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray *)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount {
     if (imageViewArray.count > 0) {
         UIImageView *IV = imageViewArray.firstObject;
         if (IV) {
             HeeePhotoBrowser *instance = [HeeePhotoBrowser new];
             instance.fatherView = IV.superview;
             instance.currentIndex = currentIndex;
-            instance.preLoadImageNumber = preLoadImageNumber;
+            instance.preLoadImageCount = preLoadImageCount;
             instance.highQualityImageArr = highQualityImageArr;
             [instance setImageViewArray:imageViewArray];
             return instance;
@@ -225,12 +225,12 @@
 
 - (void)handleImageDownload {
     __weak typeof (self) weakSelf = self;
-    NSInteger start = (NSInteger)(_currentIndex - _preLoadImageNumber);
+    NSInteger start = (NSInteger)(_currentIndex - _preLoadImageCount);
     if (start < 0) {
         start = 0;
     }
     
-    NSInteger end = (NSInteger)(_currentIndex + _preLoadImageNumber + 1);
+    NSInteger end = (NSInteger)(_currentIndex + _preLoadImageCount + 1);
     if (end >= MAX(self.imageViewArray.count, self.highQualityImageArr.count)) {
         end = MAX(self.imageViewArray.count, self.highQualityImageArr.count);
     }

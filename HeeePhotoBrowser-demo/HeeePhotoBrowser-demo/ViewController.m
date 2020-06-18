@@ -63,7 +63,7 @@
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     NSUInteger currentIndex = [_IVArr indexOfObject:gestureRecognizer.view];
-    [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:currentIndex highQualityImageArray:_urlArr andPreLoadImageNumber:2];
+    [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:currentIndex highQualityImageArray:_urlArr andPreLoadImageCount:2];
 }
 
 - (void)nextBtnClick {

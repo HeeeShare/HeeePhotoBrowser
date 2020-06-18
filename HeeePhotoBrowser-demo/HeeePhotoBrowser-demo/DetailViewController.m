@@ -51,7 +51,7 @@
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     UIView *IV = gestureRecognizer.view;
-    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:[_IVArr indexOfObject:IV] highQualityImageArray:nil andPreLoadImageNumber:2];
+    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:[_IVArr indexOfObject:IV] highQualityImageArray:nil andPreLoadImageCount:2];
     photoBrowser.delegate = self;
 }
 
