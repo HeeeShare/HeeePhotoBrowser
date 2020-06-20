@@ -33,7 +33,6 @@
         //添加手势
         [self addGestureRecognizer:self.doubleTap];
         [self addGestureRecognizer:self.singleTap];
-        [self addGestureRecognizer:self.longPress];
     }
     
     return self;
@@ -175,6 +174,12 @@
             weakSelf.shouldDownloadImage = YES;
         }
     }];
+}
+
+- (void)setLongPressBlock:(void (^)(void))longPressBlock {
+    _longPressBlock = longPressBlock;
+    [self removeGestureRecognizer:self.longPress];
+    [self addGestureRecognizer:self.longPress];
 }
 
 #pragma mark - 手势处理

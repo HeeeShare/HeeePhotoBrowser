@@ -10,7 +10,7 @@
 #import "HeeePhotoBrowser.h"
 #import "UIImageView+WebCache.h"
 
-@interface DetailViewController ()<HeeePhotoBrowserDelegate>
+@interface DetailViewController ()
 @property (nonatomic,strong) NSMutableArray *IVArr;
 @property (nonatomic,strong) UITableView *tableView;
 
@@ -51,8 +51,7 @@
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     UIView *IV = gestureRecognizer.view;
-    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showPhotoBrowserWithImageViews:_IVArr currentIndex:[_IVArr indexOfObject:IV] highQualityImageArray:nil andPreLoadImageCount:2];
-    photoBrowser.delegate = self;
+    [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:[_IVArr indexOfObject:IV] highQualityImageArray:nil andPreLoadImageCount:2 andDelegate:self];
 }
 
 #pragma mark - HeeePhotoBrowserDelegate

@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 @class HeeePhotoBrowser;
 
-NS_ASSUME_NONNULL_BEGIN
-
 @protocol HeeePhotoBrowserDelegate <NSObject>
 @optional
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didDisappearAtIndex:(NSInteger)index;
@@ -33,10 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
  @param currentIndex 第一次点击的图片位置
  @param highQualityImageArr 高清图url数组，可以多于imageViewArray里的imageView
  @param preLoadImageCount 预加载图片数量，当前index左右两侧。
+ @param delegate 代理，可为nil。
  */
-+ (instancetype)showPhotoBrowserWithImageViews:(nonnull NSArray *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(nullable NSArray *)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount;
-@property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
++ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray <NSString *>*)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount andDelegate:(id)delegate;
 
 @end
-
-NS_ASSUME_NONNULL_END

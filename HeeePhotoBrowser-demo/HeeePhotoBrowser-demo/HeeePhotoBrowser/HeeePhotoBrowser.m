@@ -12,6 +12,7 @@
 #import "HeeePhotoDetectingImageView.h"
 
 @interface HeeePhotoBrowser ()<UIScrollViewDelegate>
+@property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
 @property (nonatomic,strong) UIScrollView *scrollView;
 @property (nonatomic,strong) NSMutableArray *allPhotoView;
 @property (nonatomic,strong) UIImageView *animationIV;//用于动画
@@ -28,11 +29,12 @@
 @end
 
 @implementation HeeePhotoBrowser
-+ (instancetype)showPhotoBrowserWithImageViews:(NSArray *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray *)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount {
++ (instancetype)showWithImageViews:(NSArray<UIImageView *> *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray<NSString *> *)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount andDelegate:(id)delegate {
     if (imageViewArray.count > 0) {
         UIImageView *IV = imageViewArray.firstObject;
         if (IV) {
             HeeePhotoBrowser *instance = [HeeePhotoBrowser new];
+            instance.delegate = delegate;
             instance.fatherView = IV.superview;
             instance.currentIndex = currentIndex;
             instance.preLoadImageCount = preLoadImageCount;
@@ -175,11 +177,11 @@
     };
     
     NSUInteger index = photoView.tag - 100;
-    photoView.longPressBlock = ^{
-        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)]) {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)]) {
+        photoView.longPressBlock = ^{
             [weakSelf.delegate photoBrowser:weakSelf didLongPressAtIndex:index];
-        }
-    };
+        };
+    }
     
     photoView.startDragImage = ^{
         if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:startDragImageAtIndex:)]) {
