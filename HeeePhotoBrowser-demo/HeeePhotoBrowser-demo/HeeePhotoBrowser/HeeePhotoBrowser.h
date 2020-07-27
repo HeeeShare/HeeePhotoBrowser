@@ -25,14 +25,17 @@
 - (void)hidePhotoBrowserWithFrame:(CGRect)frame;
 
 /**
- 生成方法
+ 实例方法
  
  @param imageViewArray 包含所有需要展示的imageView
- @param currentIndex 第一次点击的图片位置
+ @param currentIndex 第一次点击的图片位置(imageViewArray中的位置)
  @param highQualityImageArr 高清图url数组，可以多于imageViewArray里的imageView
  @param preLoadImageCount 预加载图片数量，当前index左右两侧。
- @param delegate 代理，可为nil。
+ @param delegate 代理，可为nil
  */
-+ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray <NSString *>*)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount andDelegate:(id)delegate;
-
++ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
+                      currentIndex:(NSUInteger)currentIndex
+             highQualityImageArray:(NSArray <NSString *>*)highQualityImageArr
+                 preLoadImageCount:(NSUInteger)preLoadImageCount
+                          delegate:(id)delegate;
 @end

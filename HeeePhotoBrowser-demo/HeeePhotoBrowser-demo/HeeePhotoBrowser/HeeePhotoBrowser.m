@@ -19,7 +19,6 @@
 @property (nonatomic,strong) NSMutableArray *NFrameArr;//新IV的frame数组
 @property (nonatomic,strong) NSArray *highQualityImageArr;//如果有的话，就设置。数量可以多于photoArr的数量
 @property (nonatomic,assign) NSUInteger currentIndex;//当前现实的第几张图片
-@property (nonatomic,strong) UIView *fatherView;//imageViewArray里面imageView的父view
 @property (nonatomic,strong) NSArray *imageViewArray;//需要包含所有的imageView
 @property (nonatomic,strong) UILabel *indexLabel;
 @property (nonatomic,assign) CGFloat screenWidth;
@@ -29,19 +28,23 @@
 @end
 
 @implementation HeeePhotoBrowser
-+ (instancetype)showWithImageViews:(NSArray<UIImageView *> *)imageViewArray currentIndex:(NSUInteger)currentIndex highQualityImageArray:(NSArray<NSString *> *)highQualityImageArr andPreLoadImageCount:(NSUInteger)preLoadImageCount andDelegate:(id)delegate {
++ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
+                      currentIndex:(NSUInteger)currentIndex
+             highQualityImageArray:(NSArray <NSString *>*)highQualityImageArr
+                 preLoadImageCount:(NSUInteger)preLoadImageCount
+                          delegate:(id)delegate {
     if (imageViewArray.count > 0) {
         UIImageView *IV = imageViewArray.firstObject;
         if (IV) {
             HeeePhotoBrowser *instance = [HeeePhotoBrowser new];
             instance.delegate = delegate;
-            instance.fatherView = IV.superview;
             instance.currentIndex = currentIndex;
             instance.preLoadImageCount = preLoadImageCount;
             instance.highQualityImageArr = highQualityImageArr;
             [instance setImageViewArray:imageViewArray];
             return instance;
         }
+        
         return nil;
     }
     return nil;
@@ -73,8 +76,8 @@
     return self;
 }
 
-- (CGRect)getFatherViewFrame:(UIView *)view {
-    return [_fatherView convertRect:view.frame toCoordinateSpace:self];
+- (CGRect)getImgVFrameInWindow:(UIView *)view {
+    return [view.superview convertRect:view.frame toView:[UIApplication sharedApplication].keyWindow];
 }
 
 - (void)setImageViewArray:(NSArray *)imageViewArray {
@@ -150,7 +153,7 @@
         
         if (_currentIndex == i) {
             _animationIV.image = IV.image;
-            _animationIV.frame = [self getFatherViewFrame:_imageViewArray[i]];
+            _animationIV.frame = [self getImgVFrameInWindow:_imageViewArray[i]];
         }
         [_scrollView addSubview:photoView];
     }
@@ -314,7 +317,7 @@
         _animationIV.hidden = NO;
         
         [UIView animateWithDuration:0.25 animations:^{
-            self.animationIV.frame = [self getFatherViewFrame:self.imageViewArray[view.tag - 100]];
+            self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[view.tag - 100]];
             self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
             self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
             self.indexLabel.alpha = 0;
@@ -345,7 +348,7 @@
         _animationIV.hidden = NO;
         _animationIV.frame = frame;
         [UIView animateWithDuration:0.25 animations:^{
-            self.animationIV.frame = [self getFatherViewFrame:self.imageViewArray[view.tag - 100]];
+            self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[view.tag - 100]];
             self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
             self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
             self.indexLabel.alpha = 0;
