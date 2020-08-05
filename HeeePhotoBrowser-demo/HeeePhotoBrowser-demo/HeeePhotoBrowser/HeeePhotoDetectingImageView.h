@@ -17,6 +17,7 @@
 @property (nonatomic,assign) CGRect originalFrame;
 @property (nonatomic,copy) void (^startDragImage) (void);
 @property (nonatomic,copy) void (^endDragImage) (BOOL close);
+@property (nonatomic,assign) BOOL animateFlag;
 
 - (void)endPull;
 @end

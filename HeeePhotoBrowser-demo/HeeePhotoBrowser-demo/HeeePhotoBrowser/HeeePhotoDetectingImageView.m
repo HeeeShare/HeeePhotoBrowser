@@ -81,7 +81,7 @@
         _endPullFlag = YES;
         self.fatherView.userInteractionEnabled = NO;
         self.fatherView.scrollEnabled = NO;
-        [self.photoView closeGesture];
+        [self.photoView gestureEnable:NO];
         
         _deviationX = point.x - _lastPoint.x;
         _deviationY = point.y - _lastPoint.y;
@@ -119,7 +119,7 @@
     self.fatherView.userInteractionEnabled = YES;
     self.fatherView.canCancelContentTouches = YES;
     self.fatherView.scrollEnabled = YES;
-    [self.photoView openGesture];
+    [self.photoView gestureEnable:YES];
     
     if (_photoView.closePullGesture) {
         return;
@@ -150,6 +150,11 @@
             self.endDragImage(NO);
         }
     }
+    
+    self.animateFlag = YES;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.animateFlag = NO;
+    });
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
@@ -165,7 +170,7 @@
         self.frame = self.originalFrame;
         [self setAnchorPoint:CGPointMake(0.5, 0.5)];
         [self.photoBrowser setScrollEnabled:YES];
-        [self.photoView openGesture];
+        [self.photoView gestureEnable:YES];
         _endPullFlag = NO;
     }
 }

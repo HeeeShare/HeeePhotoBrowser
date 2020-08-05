@@ -6,86 +6,350 @@
 //  Copyright © 2018年 hgy. All rights reserved.
 //
 
+#define HPBScreenWidth [UIScreen mainScreen].bounds.size.width
+#define HPBScreenHeight [UIScreen mainScreen].bounds.size.height
+
 #import "HeeePhotoBrowser.h"
 #import "HeeePhotoView.h"
 #import "UIImageView+WebCache.h"
 #import "HeeePhotoDetectingImageView.h"
+#import "HeeePhotoCollectionCell.h"
+#import "HeeePhotoCollectionCellModel.h"
 
-@interface HeeePhotoBrowser ()<UIScrollViewDelegate>
-@property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
-@property (nonatomic,strong) UIScrollView *scrollView;
-@property (nonatomic,strong) NSMutableArray *allPhotoView;
-@property (nonatomic,strong) UIImageView *animationIV;//用于动画
-@property (nonatomic,strong) NSMutableArray *NFrameArr;//新IV的frame数组
-@property (nonatomic,strong) NSArray *highQualityImageArr;//如果有的话，就设置。数量可以多于photoArr的数量
-@property (nonatomic,assign) NSUInteger currentIndex;//当前现实的第几张图片
-@property (nonatomic,strong) NSArray *imageViewArray;//需要包含所有的imageView
+@interface HeeePhotoBrowser ()<UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,HeeePhotoCollectionCellDelegate>
+@property (nonatomic,strong) UICollectionView *collectionView;
+@property (nonatomic,strong) UIImageView *animationIV;
+@property (nonatomic,strong) NSMutableArray <HeeePhotoCollectionCellModel *>*dataArray;
+@property (nonatomic,strong) NSArray <UIImageView *>*imageViewArray;
+@property (nonatomic,strong) NSArray <NSString *>*highQualityImageUrls;
+@property (nonatomic,strong) NSMutableArray *allPhotoViewArray;
+@property (nonatomic,assign) NSUInteger currentIndex;
+@property (nonatomic,assign) NSUInteger backwardImageCount;
+@property (nonatomic,strong) NSMutableArray <HeeePhotoCollectionCell *>*reuseCellArray;
 @property (nonatomic,strong) UILabel *indexLabel;
-@property (nonatomic,assign) CGFloat screenWidth;
-@property (nonatomic,assign) CGFloat screenHeight;
-@property (nonatomic,assign) NSUInteger preLoadImageCount;
+@property (nonatomic,assign) BOOL noSupportLongPress;
 
 @end
 
 @implementation HeeePhotoBrowser
-+ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
-                      currentIndex:(NSUInteger)currentIndex
-             highQualityImageArray:(NSArray <NSString *>*)highQualityImageArr
-                 preLoadImageCount:(NSUInteger)preLoadImageCount
-                          delegate:(id)delegate {
-    if (imageViewArray.count > 0) {
-        UIImageView *IV = imageViewArray.firstObject;
-        if (IV) {
-            HeeePhotoBrowser *instance = [HeeePhotoBrowser new];
-            instance.delegate = delegate;
-            instance.currentIndex = currentIndex;
-            instance.preLoadImageCount = preLoadImageCount;
-            instance.highQualityImageArr = highQualityImageArr;
-            [instance setImageViewArray:imageViewArray];
-            return instance;
-        }
-        
-        return nil;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.frame = CGRectMake(0, 0, HPBScreenWidth, HPBScreenHeight);
+        self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
+        [self addSubview:self.animationIV];
+        [self addSubview:self.collectionView];
+        [self addSubview:self.indexLabel];
     }
-    return nil;
+    
+    return self;
 }
 
 - (void)removeFromSuperview {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didDisappearAtIndex:)]) {
-        [self.delegate photoBrowser:self didDisappearAtIndex:self.currentIndex];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didRemoveAtIndex:)]) {
+        [self.delegate photoBrowser:self didRemoveAtIndex:self.currentIndex];
     }
     
     [super removeFromSuperview];
 }
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _screenWidth = [UIScreen mainScreen].bounds.size.width;
-        _screenHeight = [UIScreen mainScreen].bounds.size.height;
-        self.frame = CGRectMake(0, 0, _screenWidth, _screenHeight);
-        self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
-        _NFrameArr = [NSMutableArray array];
-        _animationIV = [UIImageView new];
-        _animationIV.clipsToBounds = YES;
-        _animationIV.contentMode = UIViewContentModeScaleAspectFill;
-        _animationIV.hidden = YES;
-        [self addSubview:_animationIV];
++ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
+                      currentIndex:(NSUInteger)currentIndex
+              highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls {
+    if (imageViewArray.count > 0) {
+        HeeePhotoBrowser *instance = [HeeePhotoBrowser new];
+        instance.imageViewArray = imageViewArray;
+        instance.currentIndex = currentIndex;
+        instance.highQualityImageUrls = highQualityImageUrls;
+        [instance setup];
+        [instance show];
+        return instance;
+    }
+    return nil;
+}
+
+- (void)setup {
+    for (int i = 0; i < self.imageViewArray.count; i++) {
+        UIImageView *imgV = self.imageViewArray[i];
+        HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
+        model.image = imgV.image;
+        if (self.highQualityImageUrls.count > i) {
+            model.imageUrl = self.highQualityImageUrls[i];
+        }
+        
+        [self.dataArray addObject:model];
     }
     
-    return self;
+    [self.collectionView reloadData];
+    [self setupIndexLabel];
+}
+
+- (void)addImages:(NSArray<NSString *> *)imageUrlArray direction:(BOOL)forward {
+    if (forward) {
+        for (NSString *imageUrl in imageUrlArray) {
+            HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
+            model.imageUrl = imageUrl;
+            [self.dataArray addObject:model];
+        }
+        
+        [self.collectionView reloadData];
+    }else{
+        CGFloat offsetX = self.collectionView.contentOffset.x;
+        NSMutableArray *temArr = [NSMutableArray array];
+        for (NSString *imageUrl in imageUrlArray) {
+            HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
+            model.imageUrl = imageUrl;
+            [temArr addObject:model];
+        }
+        
+        self.backwardImageCount+=imageUrlArray.count;
+        
+        self.currentIndex+=temArr.count;
+        [self.dataArray insertObjects:temArr atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, temArr.count)]];
+        [self.collectionView reloadData];
+        [self.collectionView setContentOffset:CGPointMake(offsetX + temArr.count*self.collectionView.bounds.size.width, 0) animated:NO];
+    }
+    
+    [self setupIndexLabel];
+}
+
+- (void)show {
+    //隐藏原图
+    UIImageView *currentImgV = self.imageViewArray[self.currentIndex];
+    currentImgV.alpha = 0;
+    
+    //显示动画图
+    self.animationIV.image = currentImgV.image;
+    self.animationIV.frame = [self getImgVFrameInWindow:currentImgV];
+    self.animationIV.hidden = NO;
+    
+    self.collectionView.hidden = YES;
+    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+    [[UIApplication sharedApplication].keyWindow addSubview:self];
+    [UIView animateWithDuration:0.25 animations:^{
+        self.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
+        self.animationIV.frame = [self getImageViewFrame:currentImgV.image];
+        self.animationIV.layer.cornerRadius = 0;
+    } completion:^(BOOL finished) {
+        self.animationIV.hidden = YES;
+        self.collectionView.hidden = NO;
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didShowImageAtIndex:)]) {
+            [self.delegate photoBrowser:self didShowImageAtIndex:self.currentIndex];
+        }
+    }];
+}
+
+- (void)setupIndexLabel {
+    self.indexLabel.text = [NSString stringWithFormat:@"%zd/%zd",self.currentIndex + 1,self.dataArray.count];
+    self.indexLabel.hidden = self.dataArray.count>1?0:1;
+    [self.indexLabel sizeToFit];
+    CGFloat width = self.indexLabel.bounds.size.width + 24;
+    CGFloat height = self.indexLabel.bounds.size.height + 8;
+    CGFloat top = 20;
+    if (@available(iOS 11.0, *)) {
+        top = [UIApplication sharedApplication].keyWindow.safeAreaInsets.top;
+    }
+    CGFloat left = (HPBScreenWidth - width)/2;
+    self.indexLabel.frame = CGRectMake(left, top, width, height);
+    self.indexLabel.layer.cornerRadius = self.indexLabel.bounds.size.height/2;
+}
+
+- (CGRect)getImageViewFrame:(UIImage *)image {
+    CGFloat W = HPBScreenWidth;
+    CGFloat H = W*image.size.height/image.size.width;
+    
+    if (!image) {
+        H = 9*W/16;
+    }
+    
+    return CGRectMake(0, (HPBScreenHeight - H)/2, W, H);
 }
 
 - (CGRect)getImgVFrameInWindow:(UIView *)view {
     return [view.superview convertRect:view.frame toView:[UIApplication sharedApplication].keyWindow];
 }
 
-- (void)setImageViewArray:(NSArray *)imageViewArray {
-    _imageViewArray = imageViewArray;
-    [self addScrollView];
-    [self addSubview:self.indexLabel];
-    [self setUpFrames];
-    [self show];
+#pragma mark -
+- (void)setScrollEnabled:(BOOL)scrollEnabled {
+    [self.collectionView setScrollEnabled:scrollEnabled];
+}
+
+- (void)setClearRate:(CGFloat)rate {
+    self.backgroundColor = [[UIColor alloc] initWithWhite:0 alpha:pow(rate, 3)];
+}
+
+- (void)hidePhotoBrowserWithFrame:(CGRect)frame {
+    if (_currentIndex - _backwardImageCount < _imageViewArray.count) {
+        UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0]];
+        cell.contentView.hidden = YES;
+        
+        //原图
+        UIImageView *IV = self.imageViewArray[_currentIndex - _backwardImageCount];
+        
+        _animationIV.hidden = NO;
+        _animationIV.frame = frame;
+        [UIView animateWithDuration:0.25 animations:^{
+            self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[self.currentIndex - self.backwardImageCount]];
+            self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
+            self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
+        } completion:^(BOOL finished) {
+            IV.alpha = 1;
+            
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self removeFromSuperview];
+            });
+        }];
+    }else{
+        [UIView animateWithDuration:0.25 animations:^{
+            self.alpha = 0;
+        } completion:^(BOOL finished) {
+            [self removeFromSuperview];
+        }];
+    }
+}
+
+#pragma mark - HeeePhotoCollectionCellDelegate
+- (void)photoViewLongPress:(HeeePhotoView *)photoView {
+    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)]) {
+        [_delegate photoBrowser:self didLongPressAtIndex:self.currentIndex];
+    }
+}
+
+- (void)photoViewStartDragImage:(HeeePhotoView *)photoView {
+    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:startDragImageAtIndex:)]) {
+        [_delegate photoBrowser:self startDragImageAtIndex:self.currentIndex];
+    }
+}
+
+- (void)photoViewEndDragImage:(HeeePhotoView *)photoView willClose:(BOOL)close {
+    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:endDragImageAtIndex:close:)]) {
+        [_delegate photoBrowser:self endDragImageAtIndex:self.currentIndex close:close];
+    }
+}
+
+- (void)photoViewSingleTap:(HeeePhotoView *)photoView {
+    CGRect frame = [photoView.scrollview convertRect:photoView.imageview.frame toCoordinateSpace:self];
+    [self hidePhotoBrowserWithFrame:frame];
+}
+
+#pragma mark - collectionDelegate
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+    return self.dataArray.count;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
+    return CGSizeMake(HPBScreenWidth + 20, HPBScreenHeight);
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+    HeeePhotoCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"HeeePhotoCollectionCell" forIndexPath:indexPath];
+    cell.model = self.dataArray[indexPath.row];
+    cell.delegate = self;
+    
+    if (![self.reuseCellArray containsObject:cell]) {
+        [self.reuseCellArray addObject:cell];
+    }
+    
+    return cell;
+}
+
+#pragma mark - UIScrollViewDelegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    int index = (scrollView.contentOffset.x + scrollView.bounds.size.width * 0.5) / scrollView.bounds.size.width;
+    if (index >= 0 && index < self.dataArray.count) {
+        if (self.currentIndex != index) {
+            self.currentIndex = index;
+            [self setupIndexLabel];
+        }
+    }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    int autualIndex = scrollView.contentOffset.x/scrollView.bounds.size.width;
+    //设置当前下标
+    self.currentIndex = autualIndex;
+
+    if (self.currentIndex >= self.dataArray.count) {
+        [self removeFromSuperview];
+        return;
+    }
+    
+    //恢复所有view的zoomScale为1.0
+    for (HeeePhotoCollectionCell *cell in self.reuseCellArray) {
+        HeeePhotoCollectionCell *currentCell = (HeeePhotoCollectionCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0]];
+        if (cell != currentCell) {
+            [cell resetZoomScale];
+        }
+    }
+    
+    //让所有原view可见
+    for (int i = 0; i < self.imageViewArray.count; i++) {
+        UIImageView *originalIV = self.imageViewArray[i];
+        originalIV.alpha = 1;
+    }
+    
+    //让滑动到对应的原view不可见，刷新animationIV
+    if (_currentIndex - _backwardImageCount < self.imageViewArray.count) {
+        UIImageView *IV = self.imageViewArray[_currentIndex - _backwardImageCount];
+        IV.alpha = 0;
+        self.animationIV.image = IV.image;
+        self.animationIV.frame = [self getImageViewFrame:IV.image];
+    }
+    
+    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:didShowImageAtIndex:)]) {
+        [_delegate photoBrowser:self didShowImageAtIndex:autualIndex];
+    }
+}
+
+#pragma mark - lazy
+- (UICollectionView *)collectionView {
+    if (!_collectionView) {
+        UICollectionViewFlowLayout *layout = [UICollectionViewFlowLayout new];
+        layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+        layout.minimumLineSpacing = 0;
+        
+        UICollectionView *collectionView = [[UICollectionView alloc]initWithFrame:CGRectMake(-10, 0, HPBScreenWidth + 20, HPBScreenHeight) collectionViewLayout:layout];
+        collectionView.delegate = self;
+        collectionView.dataSource = self;
+        [collectionView registerClass:[HeeePhotoCollectionCell class] forCellWithReuseIdentifier:@"HeeePhotoCollectionCell"];
+        collectionView.backgroundColor = [UIColor clearColor];
+        collectionView.showsVerticalScrollIndicator = NO;
+        collectionView.showsHorizontalScrollIndicator = NO;
+        collectionView.pagingEnabled = YES;
+        collectionView.delaysContentTouches = NO;
+        
+        _collectionView = collectionView;
+    }
+    
+    return _collectionView;
+}
+
+- (NSMutableArray <HeeePhotoCollectionCellModel *>*)dataArray {
+    if (!_dataArray) {
+        _dataArray = [NSMutableArray array];
+    }
+    
+    return _dataArray;
+}
+
+- (NSMutableArray <HeeePhotoCollectionCell *>*)reuseCellArray {
+    if (!_reuseCellArray) {
+        _reuseCellArray = [NSMutableArray array];
+    }
+    
+    return _reuseCellArray;
+}
+
+- (UIImageView *)animationIV {
+    if (!_animationIV) {
+        _animationIV = [UIImageView new];
+        _animationIV.clipsToBounds = YES;
+        _animationIV.contentMode = UIViewContentModeScaleAspectFill;
+        _animationIV.hidden = YES;
+    }
+    
+    return _animationIV;
 }
 
 - (UILabel *)indexLabel {
@@ -93,325 +357,12 @@
         _indexLabel = [[UILabel alloc] init];
         _indexLabel.textColor = [UIColor whiteColor];
         _indexLabel.textAlignment = NSTextAlignmentCenter;
-        _indexLabel.font = [UIFont fontWithName:@"ArialRoundedMTBold" size:22];
-        _indexLabel.backgroundColor = [UIColor colorWithRed:0.1f green:0.1f blue:0.1f alpha:0.3f];
-        _indexLabel.bounds = CGRectMake(0, 0, 100, 40);
-        _indexLabel.center = CGPointMake(_screenWidth * 0.5, 30);
-        _indexLabel.layer.cornerRadius = 15;
+        _indexLabel.font = [UIFont fontWithName:@"ArialRoundedMTBold" size:18];
+        _indexLabel.backgroundColor = [UIColor colorWithWhite:0 alpha:0.1];
         _indexLabel.clipsToBounds = YES;
-        
-        if (self.imageViewArray.count > 0) {
-            NSUInteger totalImage = MAX(self.imageViewArray.count, self.highQualityImageArr.count);
-            _indexLabel.text = [NSString stringWithFormat:@"1/%zd", totalImage];
-            _indexLabel.hidden = totalImage>1?0:1;
-        }
     }
     
     return _indexLabel;
-}
-
-- (NSMutableArray *)allPhotoView {
-    if (!_allPhotoView) {
-        _allPhotoView = [NSMutableArray array];
-    }
-    
-    return _allPhotoView;
-}
-
-- (void)addScrollView {
-    _scrollView = [[UIScrollView alloc] init];
-    _scrollView.delaysContentTouches = NO;
-    _scrollView.frame = self.bounds;
-    _scrollView.delegate = self;
-    _scrollView.showsHorizontalScrollIndicator = NO;
-    _scrollView.showsVerticalScrollIndicator = NO;
-    _scrollView.pagingEnabled = YES;
-    _scrollView.alwaysBounceHorizontal = YES;
-    [self addSubview:_scrollView];
-    
-    for (int i = 0; i < self.imageViewArray.count; i++) {
-        HeeePhotoView *photoView = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
-        [self.allPhotoView addObject:photoView];
-        if (_highQualityImageArr.count <= i) {
-            [photoView hideDownloadProgressView];
-        }
-        photoView.tag = 100 + i;
-        photoView.imageview.tag = i;
-        photoView.photoBrowser = self;
-        UIImageView *IV = self.imageViewArray[i];
-        photoView.imageview.image = IV.image;
-        
-        CGFloat W = _screenWidth;
-        CGFloat H = W*IV.image.size.height/IV.image.size.width;
-        
-        if (!IV.image) {
-            H = 9*W/16;
-        }
-        
-        [self handlePhotoViewBlockEnvent:photoView];
-        [_NFrameArr addObject:[NSValue valueWithCGRect:CGRectMake(0, (_screenHeight - H)/2, W, H)]];
-        
-        if (_currentIndex == i) {
-            _animationIV.image = IV.image;
-            _animationIV.frame = [self getImgVFrameInWindow:_imageViewArray[i]];
-        }
-        [_scrollView addSubview:photoView];
-    }
-    
-    if (_highQualityImageArr.count > _imageViewArray.count) {
-        for (NSUInteger i = _imageViewArray.count; i < _highQualityImageArr.count; i++) {
-            HeeePhotoView *photoView = [[HeeePhotoView alloc] initWithFrame:CGRectMake(0, 0, _screenWidth, _screenHeight)];
-            [self handlePhotoViewBlockEnvent:photoView];
-            [self.allPhotoView addObject:photoView];
-            photoView.tag = 100 + i;
-            photoView.imageview.tag = i;
-            photoView.photoBrowser = self;
-            [_scrollView addSubview:photoView];
-        }
-    }
-    
-    [self handleImageDownload];
-}
-
-- (void)handlePhotoViewBlockEnvent:(HeeePhotoView *)photoView {
-    __weak __typeof(self) weakSelf = self;
-    photoView.singleTapBlock = ^(UITapGestureRecognizer *recognizer){
-        [weakSelf hidePhotoBrowser:recognizer];
-    };
-    
-    NSUInteger index = photoView.tag - 100;
-    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)]) {
-        photoView.longPressBlock = ^{
-            [weakSelf.delegate photoBrowser:weakSelf didLongPressAtIndex:index];
-        };
-    }
-    
-    photoView.startDragImage = ^{
-        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:startDragImageAtIndex:)]) {
-            [weakSelf.delegate photoBrowser:weakSelf startDragImageAtIndex:weakSelf.currentIndex];
-        }
-    };
-    
-    photoView.endDragImage = ^(BOOL close) {
-        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoBrowser:endDragImageAtIndex:close:)]) {
-            [weakSelf.delegate photoBrowser:weakSelf endDragImageAtIndex:weakSelf.currentIndex close:close];
-        }
-    };
-}
-
-- (void)setUpFrames {
-    CGRect rect = self.bounds;
-    rect.size.width += 10 * 2;
-    _scrollView.bounds = rect;
-    _scrollView.center = CGPointMake(_screenWidth*0.5, _screenHeight*0.5);
-    
-    CGFloat y = 0;
-    __block CGFloat w = _screenWidth;
-    CGFloat h = _screenHeight;
-    
-    //设置所有HeeePhotoView的frame
-    [_scrollView.subviews enumerateObjectsUsingBlock:^(HeeePhotoView *obj, NSUInteger idx, BOOL *stop) {
-        CGFloat x = 10 + idx * (10 * 2 + w);
-        obj.frame = CGRectMake(x, y, w, h);
-    }];
-    
-    _scrollView.contentSize = CGSizeMake(_scrollView.subviews.count * _scrollView.frame.size.width, _screenHeight);
-    _scrollView.contentOffset = CGPointMake(self.currentIndex * _scrollView.frame.size.width, 0);
-    _indexLabel.bounds = CGRectMake(0, 0, 80, 30);
-    _indexLabel.center = CGPointMake(_screenWidth*0.5, 24);
-    
-    //iphone X
-    if (@available(iOS 11.0, *)) {
-        if ([UIApplication sharedApplication].keyWindow.safeAreaInsets.bottom == 34) {
-            _indexLabel.center = CGPointMake(_screenWidth*0.5, 24 + 34);
-        }
-    }
-}
-
-- (void)handleImageDownload {
-    __weak typeof (self) weakSelf = self;
-    NSInteger start = (NSInteger)(_currentIndex - _preLoadImageCount);
-    if (start < 0) {
-        start = 0;
-    }
-    
-    NSInteger end = (NSInteger)(_currentIndex + _preLoadImageCount + 1);
-    if (end >= MAX(self.imageViewArray.count, self.highQualityImageArr.count)) {
-        end = MAX(self.imageViewArray.count, self.highQualityImageArr.count);
-    }
-    
-    for (NSInteger i = start; i < end; i++) {
-        if (_highQualityImageArr.count > i) {
-            HeeePhotoView *photoView = _allPhotoView[i];
-            if (photoView.shouldDownloadImage) {
-                UIImage *placeholderImage = nil;
-                if (i < _imageViewArray.count) {
-                    UIImageView *IV = self.imageViewArray[i];
-                    placeholderImage = IV.image;
-                }
-                [photoView setImageWithURL:[NSURL URLWithString:_highQualityImageArr[i]] placeholderImage:placeholderImage completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                    if (image && i < weakSelf.imageViewArray.count) {
-                        if (weakSelf.currentIndex == i) {
-                            weakSelf.animationIV.image = image;
-                        }
-                        
-                        CGFloat W = weakSelf.screenWidth;
-                        CGFloat H = W*image.size.height/image.size.width;
-                        [weakSelf.NFrameArr replaceObjectAtIndex:i withObject:[NSValue valueWithCGRect:CGRectMake(0, (weakSelf.screenHeight - H)/2, W, H)]];
-                    }
-                }];
-            }
-        }
-    }
-}
-
-- (void)setScrollEnabled:(BOOL)scrollEnabled {
-    [self.scrollView setScrollEnabled:scrollEnabled];
-}
-
-- (void)show {
-    [[UIApplication sharedApplication].keyWindow addSubview:self];
-    HeeePhotoView *view = [_scrollView viewWithTag:100 + _currentIndex];
-    view.hidden = YES;
-    
-    //隐藏原图
-    UIImageView *originalIV = _imageViewArray[self.currentIndex];
-    originalIV.alpha = 0;
-    
-    //显示动画图
-    _animationIV.hidden = NO;
-    _animationIV.layer.cornerRadius = originalIV.layer.cornerRadius;
-    
-    _indexLabel.alpha = 0;
-    
-    [UIView animateWithDuration:0.25 animations:^{
-        NSValue *frameValue = self.NFrameArr[self.currentIndex];
-        self.animationIV.frame = frameValue.CGRectValue;
-        self.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
-        self.indexLabel.alpha = 1;
-        self.animationIV.layer.cornerRadius = 0;
-    } completion:^(BOOL finished) {
-        self.animationIV.hidden = YES;
-        view.hidden = NO;
-        if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didShowImageAtIndex:)]) {
-            [self.delegate photoBrowser:self didShowImageAtIndex:self.currentIndex];
-        }
-    }];
-}
-
-- (void)setClearRate:(CGFloat)rate {
-    self.backgroundColor = [[UIColor alloc] initWithWhite:0 alpha:pow(rate, 3)];
-    _indexLabel.alpha = pow(rate, 3);
-}
-
-- (void)hidePhotoBrowser:(UITapGestureRecognizer *)recognizer {
-    if (_currentIndex < _imageViewArray.count) {
-        HeeePhotoView *view = (HeeePhotoView *)recognizer.view;
-        view.hidden = YES;
-        
-        //原图
-        UIImageView *IV = self.imageViewArray[self.currentIndex];
-        
-        //更新animationIV的frame
-        _animationIV.frame = [view.scrollview convertRect:view.imageview.frame toCoordinateSpace:self];
-        _animationIV.hidden = NO;
-        
-        [UIView animateWithDuration:0.25 animations:^{
-            self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[view.tag - 100]];
-            self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
-            self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
-            self.indexLabel.alpha = 0;
-        } completion:^(BOOL finished) {
-            IV.alpha = 1;
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self removeFromSuperview];
-            });
-        }];
-    }else{
-        [UIView animateWithDuration:0.25 animations:^{
-            self.alpha = 0;
-        } completion:^(BOOL finished) {
-            [self removeFromSuperview];
-        }];
-    }
-}
-
-- (void)hidePhotoBrowserWithFrame:(CGRect)frame {
-    if (_currentIndex < _imageViewArray.count) {
-        HeeePhotoView *view = [_scrollView viewWithTag:100 + _currentIndex];
-        view.hidden = YES;
-        
-        //原图
-        UIImageView *IV = self.imageViewArray[self.currentIndex];
-        
-        _animationIV.hidden = NO;
-        _animationIV.frame = frame;
-        [UIView animateWithDuration:0.25 animations:^{
-            self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[view.tag - 100]];
-            self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
-            self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
-            self.indexLabel.alpha = 0;
-        } completion:^(BOOL finished) {
-            IV.alpha = 1;
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self removeFromSuperview];
-            });
-        }];
-    }else{
-        [UIView animateWithDuration:0.25 animations:^{
-            self.alpha = 0;
-        } completion:^(BOOL finished) {
-            [self removeFromSuperview];
-        }];
-    }
-}
-
-#pragma mark - UIScrollViewDelegate
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    int index = (scrollView.contentOffset.x + _scrollView.bounds.size.width * 0.5) / _scrollView.bounds.size.width;
-    if (index >= 0 && index < MAX(self.imageViewArray.count, self.highQualityImageArr.count)) {
-        _indexLabel.text = [NSString stringWithFormat:@"%d/%d", index + 1, MAX((int)self.imageViewArray.count, (int)self.highQualityImageArr.count)];
-    }
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    int autualIndex = scrollView.contentOffset.x/_scrollView.bounds.size.width;
-    //设置当前下标
-    self.currentIndex = autualIndex;
-    [self handleImageDownload];
-    
-    if (self.currentIndex >= MAX(_imageViewArray.count, _highQualityImageArr.count)) {
-        [self removeFromSuperview];
-        return;
-    }
-    
-    //恢复所有view的zoomScale为1.0
-    for (HeeePhotoView *view in _scrollView.subviews) {
-        if (view.imageview.tag != autualIndex) {
-            view.scrollview.zoomScale = 1.0;
-        }
-    }
-    
-    //让所有原view可见
-    for (int i = 0; i < _imageViewArray.count; i++) {
-        UIImageView *originalIV = _imageViewArray[i];
-        originalIV.alpha = 1;
-    }
-    
-    //让滑动到对应的原view不可见，刷新animationIV
-    if (_currentIndex < _imageViewArray.count) {
-        NSValue *frameValue = _NFrameArr[_currentIndex];
-        UIImageView *IV = _imageViewArray[_currentIndex];
-        IV.alpha = 0;
-        _animationIV.image = IV.image;
-        _animationIV.frame = frameValue.CGRectValue;
-    }
-    
-    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:didShowImageAtIndex:)]) {
-        [_delegate photoBrowser:self didShowImageAtIndex:autualIndex];
-    }
 }
 
 @end

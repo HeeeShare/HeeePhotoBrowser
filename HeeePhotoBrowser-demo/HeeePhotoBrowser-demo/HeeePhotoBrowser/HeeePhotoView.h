@@ -11,21 +11,23 @@
 #import "HeeePhotoDetectingImageView.h"
 #import "HeeePhotoBrowser.h"
 
+@class HeeePhotoView;
+
+@protocol HeeePhotoViewDelegate <NSObject>
+@optional
+- (void)photoViewLongPress:(HeeePhotoView *)photoView;
+- (void)photoViewStartDragImage:(HeeePhotoView *)photoView;
+- (void)photoViewEndDragImage:(HeeePhotoView *)photoView willClose:(BOOL)close;
+- (void)photoViewSingleTap:(HeeePhotoView *)photoView;
+
+@end
+
 @interface HeeePhotoView : UIView
 @property (nonatomic,strong) UIScrollView *scrollview;
 @property (nonatomic,strong) HeeePhotoDetectingImageView *imageview;
-@property (nonatomic,weak) HeeePhotoBrowser *photoBrowser;
 @property (nonatomic,assign) BOOL closePullGesture;//当图还在滑动时，关闭滑掉图片的操作
-@property (nonatomic,assign) BOOL shouldDownloadImage;//是否需要下载图片。
-@property (nonatomic,copy) void (^longPressBlock)(void);
-@property (nonatomic,copy) void (^startDragImage) (void);
-@property (nonatomic,copy) void (^endDragImage) (BOOL close);
-@property (nonatomic,copy) void (^singleTapBlock)(UITapGestureRecognizer *recognizer);
-
-- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock;
-
-- (void)closeGesture;//防止上下滑的时候，同时可以单双击
-- (void)openGesture;
-- (void)hideDownloadProgressView;
+@property (nonatomic,weak) id <HeeePhotoViewDelegate> delegate;
+- (void)adjustFrames;
+- (void)gestureEnable:(BOOL)enable;//防止上下滑的时候，同时可以单双击
 
 @end

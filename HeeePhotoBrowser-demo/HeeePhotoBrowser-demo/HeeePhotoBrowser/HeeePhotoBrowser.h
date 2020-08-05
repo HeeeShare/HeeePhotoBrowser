@@ -11,7 +11,7 @@
 
 @protocol HeeePhotoBrowserDelegate <NSObject>
 @optional
-- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didDisappearAtIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didRemoveAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index;
@@ -29,13 +29,17 @@
  
  @param imageViewArray 包含所有需要展示的imageView
  @param currentIndex 第一次点击的图片位置(imageViewArray中的位置)
- @param highQualityImageArr 高清图url数组，可以多于imageViewArray里的imageView
- @param preLoadImageCount 预加载图片数量，当前index左右两侧。
- @param delegate 代理，可为nil
+ @param highQualityImageUrls 如果imageViewArray展示的是缩略图，那么如果需要点开本工具后查看高清图,则highQualityImageUrls里放高清图url
  */
 + (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
                       currentIndex:(NSUInteger)currentIndex
-             highQualityImageArray:(NSArray <NSString *>*)highQualityImageArr
-                 preLoadImageCount:(NSUInteger)preLoadImageCount
-                          delegate:(id)delegate;
+              highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls;
+
+@property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
+
+/// 向现有显示工具里动态添加网络图片
+/// @param imageUrlArray 所添加图片的地址
+/// @param forward 是加到最前面还是最后面
+- (void)addImages:(NSArray <NSString *>*)imageUrlArray direction:(BOOL)forward;
+
 @end

@@ -7,15 +7,15 @@
 //
 
 #import "HeeePhotoView.h"
-#import "HeeeCircleView.h"
+#import "HeeePhotoBrowser.h"
 
 @interface HeeePhotoView() <UIScrollViewDelegate>
+@property (nonatomic,weak) HeeePhotoBrowser *photoBrowser;
 @property (nonatomic,strong) UITapGestureRecognizer *doubleTap;
 @property (nonatomic,strong) UITapGestureRecognizer *singleTap;
 @property (nonatomic,strong) UILongPressGestureRecognizer *longPress;
 @property (nonatomic,assign) CGFloat screenWidth;
 @property (nonatomic,assign) CGFloat screenHeight;
-@property (nonatomic,strong) HeeeCircleView *downloadProgressView;
 @property (nonatomic,copy) NSURL *imageUrl;
 
 @end
@@ -25,161 +25,40 @@
     if (self = [super initWithFrame:frame]) {
         _screenWidth = [UIScreen mainScreen].bounds.size.width;
         _screenHeight = [UIScreen mainScreen].bounds.size.height;
-        _shouldDownloadImage = YES;
         [self addSubview:self.scrollview];
-        [self addSubview:self.downloadProgressView];
-        self.downloadProgressView.center = CGPointMake(_screenWidth/2, _screenHeight/2);
         self.scrollview.delaysContentTouches = NO;
         //添加手势
         [self addGestureRecognizer:self.doubleTap];
         [self addGestureRecognizer:self.singleTap];
+        [self addGestureRecognizer:self.longPress];
     }
     
     return self;
 }
 
-- (UIScrollView *)scrollview {
-    if (!_scrollview) {
-        _scrollview = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
-        if (@available(iOS 11.0, *)) {
-            _scrollview.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        }
-        _scrollview.delegate = self;
-        _scrollview.clipsToBounds = YES;
-        self.imageview.fatherView = _scrollview;
-        [_scrollview addSubview:self.imageview];
-    }
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    _scrollview.frame = self.bounds;
+    [self adjustFrames];
     
-    return _scrollview;
-}
-
-- (HeeePhotoDetectingImageView *)imageview {
-    if (!_imageview) {
-        _imageview = [[HeeePhotoDetectingImageView alloc] init];
-        _imageview.contentMode = UIViewContentModeScaleAspectFit;
-        _imageview.clipsToBounds = YES;
-        _imageview.photoView = self;
-        _imageview.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
-        _imageview.userInteractionEnabled = YES;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            self.imageview.photoBrowser = self.photoBrowser;
-        });
-        
-        __weak __typeof(self) weakSelf = self;
-        _imageview.startDragImage = ^{
-            !weakSelf.startDragImage?:weakSelf.startDragImage();
-        };
-        
-        _imageview.endDragImage = ^(BOOL close) {
-            !weakSelf.endDragImage?:weakSelf.endDragImage(close);
-        };
-    }
-    
-    return _imageview;
-}
-
-- (UITapGestureRecognizer *)doubleTap {
-    if (!_doubleTap) {
-        _doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
-        _doubleTap.numberOfTapsRequired = 2;
-        _doubleTap.numberOfTouchesRequired = 1;
-    }
-    
-    return _doubleTap;
-}
-
-- (UITapGestureRecognizer *)singleTap {
-    if (!_singleTap) {
-        _singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
-        _singleTap.numberOfTapsRequired = 1;
-        _singleTap.numberOfTouchesRequired = 1;
-        //不让两个手势同时起作用
-        [_singleTap requireGestureRecognizerToFail:self.doubleTap];
-    }
-    
-    return _singleTap;
-}
-
-- (UILongPressGestureRecognizer *)longPress {
-    if (!_longPress) {
-        _longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress)];
-        _longPress.minimumPressDuration = 0.3;
-    }
-    
-    return _longPress;
-}
-
-- (HeeeCircleView *)downloadProgressView {
-    if (!_downloadProgressView) {
-        _downloadProgressView = [[HeeeCircleView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
-        _downloadProgressView.userInteractionEnabled = NO;
-        _downloadProgressView.circleColor = [UIColor colorWithWhite:0.8 alpha:1.0];
-        _downloadProgressView.layer.cornerRadius = 20;
-        _downloadProgressView.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.3].CGColor;
-        _downloadProgressView.layer.borderWidth = 3;
-        _downloadProgressView.lineWidth = 3;
-        _downloadProgressView.isRoundLineCap = YES;
-    }
-    
-    return _downloadProgressView;
-}
-
--(void)closeGesture {
-    self.singleTap.enabled = NO;
-    self.doubleTap.enabled = NO;
-    self.longPress.enabled = NO;
-}
-
-- (void)openGesture {
-    self.singleTap.enabled = YES;
-    self.doubleTap.enabled = YES;
-    self.longPress.enabled = YES;
-}
-
-- (void)hideDownloadProgressView {
-    self.downloadProgressView.hidden = YES;
-    _shouldDownloadImage = NO;
-}
-
-- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder completed:(SDWebImageCompletionBlock)completedBlock {
-    _shouldDownloadImage = NO;
-    self.imageUrl = url;
-    
-    __weak typeof (self) weakSelf = self;
-    [weakSelf.imageview sd_setImageWithPreviousCachedImageWithURL:url placeholderImage:placeholder options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-        [weakSelf bringSubviewToFront:weakSelf.downloadProgressView];
-        weakSelf.downloadProgressView.hidden = NO;
-        weakSelf.downloadProgressView.progress = (CGFloat)receivedSize/(CGFloat)expectedSize;
-        [weakSelf.downloadProgressView createCircleAnimate:NO];
-    } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-        if (error) {
-            weakSelf.shouldDownloadImage = YES;
+    if (!self.imageview.photoBrowser) {
+        UIResponder *responder = self.nextResponder;
+        while (responder && ![responder isKindOfClass:[HeeePhotoBrowser class]]) {
+            responder = responder.nextResponder;
         }
         
-        if (image) {
-            weakSelf.downloadProgressView.hidden = YES;
-            
-            if (completedBlock) {
-                completedBlock(image,error,cacheType,imageURL);
-            }
-            
-            //更新新下载图片的frame
-            CGPoint centerPoint = weakSelf.imageview.center;
-            CGFloat W = weakSelf.screenWidth*weakSelf.imageview.transform.a;
-            CGFloat H = W*image.size.height/image.size.width;
-            weakSelf.imageview.frame = CGRectMake(0, 0, W, H);
-            weakSelf.imageview.center = centerPoint;
-            weakSelf.imageview.originalFrame = CGRectMake(0, (weakSelf.screenHeight - H)/2, weakSelf.screenWidth, weakSelf.screenWidth*H/W);
-        }else{
-            weakSelf.shouldDownloadImage = YES;
+        self.imageview.photoBrowser = (HeeePhotoBrowser *)responder;
+        if (_longPress && (!self.imageview.photoBrowser.delegate || ![self.imageview.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didLongPressAtIndex:)])) {
+            [self removeGestureRecognizer:self.longPress];
+            self.longPress = nil;
         }
-    }];
+    }
 }
 
-- (void)setLongPressBlock:(void (^)(void))longPressBlock {
-    _longPressBlock = longPressBlock;
-    [self removeGestureRecognizer:self.longPress];
-    [self addGestureRecognizer:self.longPress];
+- (void)gestureEnable:(BOOL)enable {
+    self.singleTap.enabled = enable;
+    self.doubleTap.enabled = enable;
+    self.longPress.enabled = enable;
 }
 
 #pragma mark - 手势处理
@@ -195,21 +74,17 @@
 }
 
 - (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
-    if (self.singleTapBlock) {
-        self.singleTapBlock(recognizer);
+    if (_delegate && [_delegate respondsToSelector:@selector(photoViewSingleTap:)]) {
+        [_delegate photoViewSingleTap:self];
     }
 }
 
 - (void)handleLongPress {
     if (self.longPress.state == UIGestureRecognizerStateBegan) {
-        !self.longPressBlock?:self.longPressBlock();
+        if (_delegate && [_delegate respondsToSelector:@selector(photoViewLongPress:)]) {
+            [_delegate photoViewLongPress:self];
+        }
     }
-}
-
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    _scrollview.frame = self.bounds;
-    [self adjustFrames];
 }
 
 - (void)adjustFrames {
@@ -287,6 +162,79 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         self.closePullGesture = NO;
     });
+}
+
+#pragma mark - lazy
+- (UIScrollView *)scrollview {
+    if (!_scrollview) {
+        _scrollview = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+        if (@available(iOS 11.0, *)) {
+            _scrollview.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+        _scrollview.delegate = self;
+        _scrollview.clipsToBounds = YES;
+        self.imageview.fatherView = _scrollview;
+        [_scrollview addSubview:self.imageview];
+    }
+    
+    return _scrollview;
+}
+
+- (HeeePhotoDetectingImageView *)imageview {
+    if (!_imageview) {
+        _imageview = [[HeeePhotoDetectingImageView alloc] init];
+        _imageview.contentMode = UIViewContentModeScaleAspectFit;
+        _imageview.clipsToBounds = YES;
+        _imageview.photoView = self;
+        _imageview.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+        _imageview.userInteractionEnabled = YES;
+        
+        __weak __typeof(self) weakSelf = self;
+        _imageview.startDragImage = ^{
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoViewStartDragImage:)]) {
+                [weakSelf.delegate photoViewStartDragImage:weakSelf];
+            }
+        };
+        
+        _imageview.endDragImage = ^(BOOL close) {
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(photoViewEndDragImage:willClose:)]) {
+                [weakSelf.delegate photoViewEndDragImage:weakSelf willClose:close];
+            }
+        };
+    }
+    
+    return _imageview;
+}
+
+- (UITapGestureRecognizer *)doubleTap {
+    if (!_doubleTap) {
+        _doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
+        _doubleTap.numberOfTapsRequired = 2;
+        _doubleTap.numberOfTouchesRequired = 1;
+    }
+    
+    return _doubleTap;
+}
+
+- (UITapGestureRecognizer *)singleTap {
+    if (!_singleTap) {
+        _singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+        _singleTap.numberOfTapsRequired = 1;
+        _singleTap.numberOfTouchesRequired = 1;
+        //不让两个手势同时起作用
+        [_singleTap requireGestureRecognizerToFail:self.doubleTap];
+    }
+    
+    return _singleTap;
+}
+
+- (UILongPressGestureRecognizer *)longPress {
+    if (!_longPress) {
+        _longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress)];
+        _longPress.minimumPressDuration = 0.3;
+    }
+    
+    return _longPress;
 }
 
 @end
