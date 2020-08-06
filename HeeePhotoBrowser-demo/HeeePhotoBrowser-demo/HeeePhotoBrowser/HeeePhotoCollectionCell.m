@@ -41,7 +41,8 @@
     
     if (model.imageUrl.length) {
         __weak __typeof(self) weakSelf = self;
-        [self.photoView.imageview sd_setImageWithURL:[NSURL URLWithString:model.imageUrl] placeholderImage:[UIImage imageNamed:@"HPBPlaceholder"] options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
+        UIImage *placeholder = self.photoView.imageview.image?self.photoView.imageview.image:[UIImage imageNamed:@"HPBPlaceholder"];
+        [self.photoView.imageview sd_setImageWithURL:[NSURL URLWithString:model.imageUrl] placeholderImage:placeholder options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 CGFloat progress = 0;
                 if (expectedSize > 0) {
@@ -52,6 +53,8 @@
                 [weakSelf.downloadProgressView createCircleAnimate:NO];
                 if (progress == 1) {
                     weakSelf.downloadProgressView.hidden = YES;
+                }else{
+                    weakSelf.downloadProgressView.hidden = NO;
                 }
             });
         } completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {

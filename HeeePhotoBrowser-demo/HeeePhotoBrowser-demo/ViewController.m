@@ -33,42 +33,24 @@
     CGFloat w = (kUIScreen_width - 2*10 - 2*5)/3;
     CGFloat h = w*3/4;
     
-    for (int i = 0; i < 3; i++) {
+    NSArray *imageName = @[@"IMG_0168.JPG",@"IMG_0169.JPG",@"IMG_0170.JPG"];
+    for (int i = 0; i < imageName.count; i++) {
         UIImageView *iv = [[UIImageView alloc] initWithFrame:CGRectMake(10 + (w + 5)*(i%3), 100 + (h + 5)*(i/3), w, h)];
         iv.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
         [_IVArr addObject:iv];
         iv.clipsToBounds = YES;
         iv.contentMode = UIViewContentModeScaleAspectFill;
         iv.userInteractionEnabled = YES;
-        if (i == 2) {
-            iv.layer.cornerRadius = h/2;
-        }
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageClick:)];
         [iv addGestureRecognizer:tap];
-        [iv sd_setImageWithURL:[NSURL URLWithString:_urlArr[i]]];
+        iv.image = [UIImage imageNamed:imageName[i]];
         [self.view addSubview:iv];
     }
 }
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     NSUInteger currentIndex = [_IVArr indexOfObject:gestureRecognizer.view];
-    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:nil];
-    
-    NSArray *leftArray = @[@"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286552_px=1080x1920_.jpg",
-                           @"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286564_px=950x1425_.jpg",
-                           @"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286567_px=580x773_.jpg"];
-    
-    NSArray *rightArray = @[@"http://qdqxelzb0.bkt.clouddn.com/V1_1596191336174_px=720x720_.jpg",
-                            @"http://qdqxelzb0.bkt.clouddn.com/V1_1596191336166_px=720x720_.jpg",
-                            @"http://qdqxelzb0.bkt.clouddn.com/V1_1596191336154_px=800x800_.jpg"];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [photoBrowser addImages:leftArray direction:NO];
-    });
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [photoBrowser addImages:rightArray direction:YES];
-    });
+    [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:_urlArr];
 }
 
 @end
