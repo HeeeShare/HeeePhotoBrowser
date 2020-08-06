@@ -23,5 +23,6 @@
 @property (nonatomic,strong) HeeePhotoCollectionCellModel *model;
 @property (nonatomic,weak) id <HeeePhotoCollectionCellDelegate> delegate;
 - (void)resetZoomScale;
+- (void)adjustImageFrames;
 
 @end

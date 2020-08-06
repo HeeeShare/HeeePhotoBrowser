@@ -109,6 +109,7 @@
             self.startDragImage();
         }
         _moving = YES;
+        _draging = YES;
     }
 }
 
@@ -151,9 +152,9 @@
         }
     }
     
-    self.animateFlag = YES;
+    self.draging = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.animateFlag = NO;
+        self.draging = NO;
     });
 }
 

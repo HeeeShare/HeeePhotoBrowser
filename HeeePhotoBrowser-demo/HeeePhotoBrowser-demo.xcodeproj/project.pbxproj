@@ -78,7 +78,7 @@
 		5A4203AE24DABEF40092FC15 /* SDDisplayLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A42036824DABEF40092FC15 /* SDDisplayLink.m */; };
 		5A4203AF24DABEF40092FC15 /* SDAsyncBlockOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A42036A24DABEF40092FC15 /* SDAsyncBlockOperation.m */; };
 		5A4203B024DABEF40092FC15 /* SDAssociatedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A42036B24DABEF40092FC15 /* SDAssociatedObject.m */; };
-		95FDC3F9227D9B8600997A07 /* H_默认图片加载.png in Resources */ = {isa = PBXBuildFile; fileRef = 95FDC3F8227D9B8600997A07 /* H_默认图片加载.png */; };
+		5A4203CD24DB9E700092FC15 /* HPBPlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 5A4203CC24DB9E700092FC15 /* HPBPlaceholder.png */; };
 		95FDC3FC227D9E3200997A07 /* HeeeCircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 95FDC3FB227D9E3200997A07 /* HeeeCircleView.m */; };
 		A7C071BD217777B200C53E9F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C071BC217777B200C53E9F /* AppDelegate.m */; };
 		A7C071C0217777B200C53E9F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C071BF217777B200C53E9F /* ViewController.m */; };
@@ -236,7 +236,7 @@
 		5A42036924DABEF40092FC15 /* SDImageAssetManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDImageAssetManager.h; sourceTree = "<group>"; };
 		5A42036A24DABEF40092FC15 /* SDAsyncBlockOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDAsyncBlockOperation.m; sourceTree = "<group>"; };
 		5A42036B24DABEF40092FC15 /* SDAssociatedObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDAssociatedObject.m; sourceTree = "<group>"; };
-		95FDC3F8227D9B8600997A07 /* H_默认图片加载.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "H_默认图片加载.png"; sourceTree = "<group>"; };
+		5A4203CC24DB9E700092FC15 /* HPBPlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HPBPlaceholder.png; sourceTree = "<group>"; };
 		95FDC3FA227D9E3200997A07 /* HeeeCircleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeeeCircleView.h; sourceTree = "<group>"; };
 		95FDC3FB227D9E3200997A07 /* HeeeCircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeeeCircleView.m; sourceTree = "<group>"; };
 		A7C071B8217777B200C53E9F /* HeeePhotoBrowser-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HeeePhotoBrowser-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -495,7 +495,7 @@
 				A7C072022177781600C53E9F /* HeeePhotoDetectingImageView.m */,
 				95FDC3FA227D9E3200997A07 /* HeeeCircleView.h */,
 				95FDC3FB227D9E3200997A07 /* HeeeCircleView.m */,
-				95FDC3F8227D9B8600997A07 /* H_默认图片加载.png */,
+				5A4203CC24DB9E700092FC15 /* HPBPlaceholder.png */,
 			);
 			path = HeeePhotoBrowser;
 			sourceTree = "<group>";
@@ -558,10 +558,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7C071C8217777B400C53E9F /* LaunchScreen.storyboard in Resources */,
-				95FDC3F9227D9B8600997A07 /* H_默认图片加载.png in Resources */,
 				5A42036D24DABEF40092FC15 /* README.md in Resources */,
 				5A42036C24DABEF40092FC15 /* LICENSE in Resources */,
 				A7C071C5217777B400C53E9F /* Assets.xcassets in Resources */,
+				5A4203CD24DB9E700092FC15 /* HPBPlaceholder.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

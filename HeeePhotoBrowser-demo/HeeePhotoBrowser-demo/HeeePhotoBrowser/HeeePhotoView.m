@@ -39,7 +39,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     _scrollview.frame = self.bounds;
-    [self adjustFrames];
+    [self adjustImageFrames];
     
     if (!self.imageview.photoBrowser) {
         UIResponder *responder = self.nextResponder;
@@ -87,7 +87,7 @@
     }
 }
 
-- (void)adjustFrames {
+- (void)adjustImageFrames {
     CGRect frame = self.scrollview.frame;
     if (self.imageview.image) {
         CGSize imageSize = self.imageview.image.size;

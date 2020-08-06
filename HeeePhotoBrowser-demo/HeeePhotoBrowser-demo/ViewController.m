@@ -35,6 +35,7 @@
     
     for (int i = 0; i < 3; i++) {
         UIImageView *iv = [[UIImageView alloc] initWithFrame:CGRectMake(10 + (w + 5)*(i%3), 100 + (h + 5)*(i/3), w, h)];
+        iv.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
         [_IVArr addObject:iv];
         iv.clipsToBounds = YES;
         iv.contentMode = UIViewContentModeScaleAspectFill;
@@ -44,14 +45,30 @@
         }
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageClick:)];
         [iv addGestureRecognizer:tap];
-        [iv sd_setImageWithURL:[NSURL URLWithString:_urlArr[i]] placeholderImage:[UIImage imageNamed:@"H_默认图片加载.png"]];
+        [iv sd_setImageWithURL:[NSURL URLWithString:_urlArr[i]]];
         [self.view addSubview:iv];
     }
 }
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     NSUInteger currentIndex = [_IVArr indexOfObject:gestureRecognizer.view];
-    [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:nil];
+    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:_urlArr];
+    
+    NSArray *leftArray = @[@"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286552_px=1080x1920_.jpg",
+                           @"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286564_px=950x1425_.jpg",
+                           @"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286567_px=580x773_.jpg"];
+    
+    NSArray *rightArray = @[@"http://qdqxelzb0.bkt.clouddn.com/V1_1596191336174_px=720x720_.jpg",
+                            @"http://qdqxelzb0.bkt.clouddn.com/V1_1596191336166_px=720x720_.jpg",
+                            @"http://qdqxelzb0.bkt.clouddn.com/V1_1596191336154_px=800x800_.jpg"];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [photoBrowser addImages:leftArray direction:NO];
+    });
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [photoBrowser addImages:rightArray direction:YES];
+    });
 }
 
 @end

@@ -70,9 +70,7 @@
 
 - (void)setup {
     for (int i = 0; i < self.imageViewArray.count; i++) {
-        UIImageView *imgV = self.imageViewArray[i];
         HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
-        model.image = imgV.image;
         if (self.highQualityImageUrls.count > i) {
             model.imageUrl = self.highQualityImageUrls[i];
         }
@@ -86,28 +84,42 @@
 
 - (void)addImages:(NSArray<NSString *> *)imageUrlArray direction:(BOOL)forward {
     if (forward) {
-        for (NSString *imageUrl in imageUrlArray) {
+        NSUInteger count = self.dataArray.count;
+        NSMutableArray *reloadArr = [NSMutableArray array];
+        for (NSUInteger i = 0; i < imageUrlArray.count; i++) {
+            NSString *imageUrl = imageUrlArray[i];
             HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
             model.imageUrl = imageUrl;
             [self.dataArray addObject:model];
+            NSIndexPath *indexpath = [NSIndexPath indexPathForRow:count + i inSection:0];
+            [reloadArr addObject:indexpath];
         }
-        
-        [self.collectionView reloadData];
+        [UIView performWithoutAnimation:^{
+            [self.collectionView insertItemsAtIndexPaths:reloadArr];
+        }];
     }else{
         CGFloat offsetX = self.collectionView.contentOffset.x;
         NSMutableArray *temArr = [NSMutableArray array];
-        for (NSString *imageUrl in imageUrlArray) {
+        NSMutableArray *reloadArr = [NSMutableArray array];
+        for (NSUInteger i = 0; i < imageUrlArray.count; i++) {
+            NSString *imageUrl = imageUrlArray[i];
             HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
             model.imageUrl = imageUrl;
             [temArr addObject:model];
+            NSIndexPath *indexpath = [NSIndexPath indexPathForRow:i inSection:0];
+            [reloadArr addObject:indexpath];
         }
-        
         self.backwardImageCount+=imageUrlArray.count;
         
         self.currentIndex+=temArr.count;
         [self.dataArray insertObjects:temArr atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, temArr.count)]];
-        [self.collectionView reloadData];
+        [UIView performWithoutAnimation:^{
+            [self.collectionView insertItemsAtIndexPaths:reloadArr];
+        }];
         [self.collectionView setContentOffset:CGPointMake(offsetX + temArr.count*self.collectionView.bounds.size.width, 0) animated:NO];
+        if (!self.collectionView.isTracking) {
+            [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:YES];
+        }
     }
     
     [self setupIndexLabel];
@@ -141,7 +153,7 @@
 }
 
 - (void)setupIndexLabel {
-    self.indexLabel.text = [NSString stringWithFormat:@"%zd/%zd",self.currentIndex + 1,self.dataArray.count];
+    self.indexLabel.text = [NSString stringWithFormat:@"%@/%@",@(self.currentIndex+1),@(self.dataArray.count)];
     self.indexLabel.hidden = self.dataArray.count>1?0:1;
     [self.indexLabel sizeToFit];
     CGFloat width = self.indexLabel.bounds.size.width + 24;
@@ -250,6 +262,8 @@
     if (![self.reuseCellArray containsObject:cell]) {
         [self.reuseCellArray addObject:cell];
     }
+    
+    [self.reuseCellArray makeObjectsPerformSelector:@selector(adjustImageFrames)];
     
     return cell;
 }

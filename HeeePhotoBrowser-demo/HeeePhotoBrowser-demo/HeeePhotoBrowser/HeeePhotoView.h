@@ -27,7 +27,7 @@
 @property (nonatomic,strong) HeeePhotoDetectingImageView *imageview;
 @property (nonatomic,assign) BOOL closePullGesture;//当图还在滑动时，关闭滑掉图片的操作
 @property (nonatomic,weak) id <HeeePhotoViewDelegate> delegate;
-- (void)adjustFrames;
+- (void)adjustImageFrames;
 - (void)gestureEnable:(BOOL)enable;//防止上下滑的时候，同时可以单双击
 
 @end

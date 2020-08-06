@@ -33,27 +33,34 @@
 - (void)setModel:(HeeePhotoCollectionCellModel *)model {
     _model = model;
     
+    self.downloadProgressView.hidden = NO;
     __weak __typeof(self) weakSelf = self;
-    self.photoView.imageview.image = model.image;
-    if (model.imageUrl.length && !model.downloadProgress) {
-        self.downloadProgressView.hidden = NO;
-        [model loadImage:^(CGFloat downloadProgress) {
-            weakSelf.downloadProgressView.progress = downloadProgress;
-            [weakSelf.downloadProgressView createCircleAnimate:YES];
-            if (downloadProgress==1.0) {
+    [self.photoView.imageview sd_setImageWithURL:[NSURL URLWithString:model.imageUrl] placeholderImage:[UIImage imageNamed:@"HPBPlaceholder"] options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            CGFloat progress = 0;
+            if (expectedSize > 0) {
+                progress = (CGFloat)receivedSize/(CGFloat)expectedSize;
+            }
+            model.progress = progress;
+            weakSelf.downloadProgressView.progress = progress;
+            [weakSelf.downloadProgressView createCircleAnimate:NO];
+            if (progress == 1) {
                 weakSelf.downloadProgressView.hidden = YES;
             }
-        } completed:^(UIImage *image) {
+        });
+    } completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+        dispatch_async(dispatch_get_main_queue(), ^{
             if (image) {
-                weakSelf.photoView.imageview.image = image;
+                weakSelf.downloadProgressView.hidden = YES;
+                [weakSelf adjustImageFrames];
             }
-        }];
-    }else{
-        self.downloadProgressView.hidden = YES;
-    }
-    
-    if (self.photoView.scrollview.zoomScale == 1.0 && self.photoView.imageview.transform.a == 1 && !self.photoView.imageview.animateFlag) {
-        [self.photoView adjustFrames];
+        });
+    }];
+}
+
+- (void)adjustImageFrames {
+    if (self.photoView.scrollview.zoomScale == 1.0 && self.photoView.imageview.transform.a == 1 && !self.photoView.imageview.draging) {
+        [self.photoView adjustImageFrames];
     }
 }
 
@@ -100,7 +107,7 @@
     if (!_downloadProgressView) {
         _downloadProgressView = [[HeeeCircleView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
         _downloadProgressView.userInteractionEnabled = NO;
-        _downloadProgressView.circleColor = [UIColor redColor];
+        _downloadProgressView.circleColor = [UIColor colorWithWhite:1 alpha:0.4];
         _downloadProgressView.layer.cornerRadius = 20;
         _downloadProgressView.layer.borderColor = [UIColor colorWithWhite:1 alpha:0.3].CGColor;
         _downloadProgressView.layer.borderWidth = 3;

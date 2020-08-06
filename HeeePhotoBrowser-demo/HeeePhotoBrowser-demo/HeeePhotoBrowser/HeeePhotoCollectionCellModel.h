@@ -9,10 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @interface HeeePhotoCollectionCellModel : NSObject
-@property (nonatomic,strong) UIImage *image;
 @property (nonatomic,copy) NSString *imageUrl;
-@property (nonatomic,assign) CGFloat downloadProgress;
-- (void)loadImage:(void (^) (CGFloat downloadProgress))downloadBlock
-        completed:(void (^) (UIImage *image))completedBlock;
+@property (nonatomic,assign) CGFloat progress;
 
 @end
