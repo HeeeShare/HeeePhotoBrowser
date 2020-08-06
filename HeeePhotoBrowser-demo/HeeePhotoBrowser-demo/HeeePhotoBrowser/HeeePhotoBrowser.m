@@ -71,6 +71,7 @@
 - (void)setup {
     for (int i = 0; i < self.imageViewArray.count; i++) {
         HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
+        model.image = self.imageViewArray[i].image;
         if (self.highQualityImageUrls.count > i) {
             model.imageUrl = self.highQualityImageUrls[i];
         }
@@ -142,6 +143,7 @@
         self.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
         self.animationIV.frame = [self getImageViewFrame:currentImgV.image];
         self.animationIV.layer.cornerRadius = 0;
+        self.indexLabel.alpha = 1;
     } completion:^(BOOL finished) {
         self.animationIV.hidden = YES;
         self.collectionView.hidden = NO;
@@ -189,6 +191,7 @@
 
 - (void)setClearRate:(CGFloat)rate {
     self.backgroundColor = [[UIColor alloc] initWithWhite:0 alpha:pow(rate, 3)];
+    self.indexLabel.alpha = pow(rate, 3);
 }
 
 - (void)hidePhotoBrowserWithFrame:(CGRect)frame {
@@ -205,6 +208,7 @@
             self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[self.currentIndex - self.backwardImageCount]];
             self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
             self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
+            self.indexLabel.alpha = 0;
         } completion:^(BOOL finished) {
             IV.alpha = 1;
             
@@ -374,6 +378,7 @@
         _indexLabel.font = [UIFont fontWithName:@"ArialRoundedMTBold" size:18];
         _indexLabel.backgroundColor = [UIColor colorWithWhite:0 alpha:0.1];
         _indexLabel.clipsToBounds = YES;
+        _indexLabel.alpha = 0;
     }
     
     return _indexLabel;

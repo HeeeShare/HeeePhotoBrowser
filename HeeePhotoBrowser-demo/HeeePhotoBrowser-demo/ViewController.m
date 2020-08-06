@@ -52,7 +52,7 @@
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     NSUInteger currentIndex = [_IVArr indexOfObject:gestureRecognizer.view];
-    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:_urlArr];
+    HeeePhotoBrowser *photoBrowser = [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:nil];
     
     NSArray *leftArray = @[@"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286552_px=1080x1920_.jpg",
                            @"http://qdqxelzb0.bkt.clouddn.com/V1_1596535286564_px=950x1425_.jpg",

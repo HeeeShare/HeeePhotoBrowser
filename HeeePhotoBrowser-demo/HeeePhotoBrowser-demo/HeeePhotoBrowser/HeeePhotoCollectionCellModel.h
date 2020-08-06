@@ -10,6 +10,7 @@
 
 @interface HeeePhotoCollectionCellModel : NSObject
 @property (nonatomic,copy) NSString *imageUrl;
+@property (nonatomic,strong) UIImage *image;
 @property (nonatomic,assign) CGFloat progress;
 
 @end

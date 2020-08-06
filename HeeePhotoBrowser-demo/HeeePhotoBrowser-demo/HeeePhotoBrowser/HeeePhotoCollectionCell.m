@@ -34,28 +34,35 @@
     _model = model;
     
     self.downloadProgressView.hidden = NO;
-    __weak __typeof(self) weakSelf = self;
-    [self.photoView.imageview sd_setImageWithURL:[NSURL URLWithString:model.imageUrl] placeholderImage:[UIImage imageNamed:@"HPBPlaceholder"] options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            CGFloat progress = 0;
-            if (expectedSize > 0) {
-                progress = (CGFloat)receivedSize/(CGFloat)expectedSize;
-            }
-            model.progress = progress;
-            weakSelf.downloadProgressView.progress = progress;
-            [weakSelf.downloadProgressView createCircleAnimate:NO];
-            if (progress == 1) {
-                weakSelf.downloadProgressView.hidden = YES;
-            }
-        });
-    } completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (image) {
-                weakSelf.downloadProgressView.hidden = YES;
-                [weakSelf adjustImageFrames];
-            }
-        });
-    }];
+    if (model.image) {
+        self.downloadProgressView.hidden = YES;
+        self.photoView.imageview.image = model.image;
+    }
+    
+    if (model.imageUrl.length) {
+        __weak __typeof(self) weakSelf = self;
+        [self.photoView.imageview sd_setImageWithURL:[NSURL URLWithString:model.imageUrl] placeholderImage:[UIImage imageNamed:@"HPBPlaceholder"] options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                CGFloat progress = 0;
+                if (expectedSize > 0) {
+                    progress = (CGFloat)receivedSize/(CGFloat)expectedSize;
+                }
+                model.progress = progress;
+                weakSelf.downloadProgressView.progress = progress;
+                [weakSelf.downloadProgressView createCircleAnimate:NO];
+                if (progress == 1) {
+                    weakSelf.downloadProgressView.hidden = YES;
+                }
+            });
+        } completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (image) {
+                    weakSelf.downloadProgressView.hidden = YES;
+                    [weakSelf adjustImageFrames];
+                }
+            });
+        }];
+    }
 }
 
 - (void)adjustImageFrames {
