@@ -23,9 +23,7 @@
     if (self) {
         self.backgroundColor = [UIColor clearColor];
         [self.contentView addSubview:self.photoView];
-        
-        [self.contentView addSubview:self.downloadProgressView];
-        self.downloadProgressView.center = CGPointMake([UIScreen mainScreen].bounds.size.width/2, [UIScreen mainScreen].bounds.size.height/2);
+        [self.photoView.imageview addSubview:self.downloadProgressView];
     }
     return self;
 }
@@ -71,6 +69,7 @@
 - (void)adjustImageFrames {
     if (self.photoView.scrollview.zoomScale == 1.0 && self.photoView.imageview.transform.a == 1 && !self.photoView.imageview.draging) {
         [self.photoView adjustImageFrames];
+        self.downloadProgressView.center = CGPointMake(self.photoView.imageview.bounds.size.width/2, self.photoView.imageview.bounds.size.height/2);
     }
 }
 

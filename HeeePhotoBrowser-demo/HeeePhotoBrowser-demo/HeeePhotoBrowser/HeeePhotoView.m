@@ -182,11 +182,10 @@
 
 - (HeeePhotoDetectingImageView *)imageview {
     if (!_imageview) {
-        _imageview = [[HeeePhotoDetectingImageView alloc] init];
+        _imageview = [[HeeePhotoDetectingImageView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
         _imageview.contentMode = UIViewContentModeScaleAspectFit;
         _imageview.clipsToBounds = YES;
         _imageview.photoView = self;
-        _imageview.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
         _imageview.userInteractionEnabled = YES;
         
         __weak __typeof(self) weakSelf = self;
