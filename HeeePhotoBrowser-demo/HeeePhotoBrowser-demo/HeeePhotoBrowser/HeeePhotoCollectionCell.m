@@ -63,6 +63,8 @@
                 }
             });
         }];
+    }else{
+        self.downloadProgressView.hidden = YES;
     }
 }
 
