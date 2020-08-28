@@ -68,6 +68,11 @@
     return nil;
 }
 
+- (void)hide {
+    HeeePhotoCollectionCell *cell = (HeeePhotoCollectionCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0]];
+    [self photoViewSingleTap:cell.photoView];
+}
+
 - (void)setup {
     for (int i = 0; i < self.imageViewArray.count; i++) {
         HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];

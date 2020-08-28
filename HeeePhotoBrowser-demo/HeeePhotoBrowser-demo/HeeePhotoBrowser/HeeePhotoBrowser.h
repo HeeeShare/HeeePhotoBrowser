@@ -35,6 +35,8 @@
                       currentIndex:(NSUInteger)currentIndex
               highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls;
 
+- (void)hide;
+
 @property (nonatomic,weak) id<HeeePhotoBrowserDelegate> delegate;
 
 /// 向现有显示工具里动态添加网络图片

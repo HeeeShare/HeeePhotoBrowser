@@ -21,6 +21,7 @@
 
 @interface HeeePhotoCollectionCell : UICollectionViewCell
 @property (nonatomic,strong) HeeePhotoCollectionCellModel *model;
+@property (nonatomic,strong,readonly) HeeePhotoView *photoView;
 @property (nonatomic,weak) id <HeeePhotoCollectionCellDelegate> delegate;
 - (void)resetZoomScale;
 - (void)adjustImageFrames;
