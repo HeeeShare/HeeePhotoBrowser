@@ -132,6 +132,8 @@
 }
 
 - (void)show {
+    [[UIApplication sharedApplication].windows.firstObject endEditing:YES];
+    
     //隐藏原图
     UIImageView *currentImgV = self.imageViewArray[self.currentIndex];
     currentImgV.alpha = 0;
@@ -143,7 +145,7 @@
     
     self.collectionView.hidden = YES;
     [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
-    [[UIApplication sharedApplication].keyWindow addSubview:self];
+    [[UIApplication sharedApplication].windows.firstObject addSubview:self];
     [UIView animateWithDuration:0.25 animations:^{
         self.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
         self.animationIV.frame = [self getImageViewFrame:currentImgV.image];
@@ -167,7 +169,7 @@
     CGFloat height = self.indexLabel.bounds.size.height + 8;
     CGFloat top = 20;
     if (@available(iOS 11.0, *)) {
-        top = [UIApplication sharedApplication].keyWindow.safeAreaInsets.top;
+        top = [UIApplication sharedApplication].windows.firstObject.safeAreaInsets.top;
     }
     CGFloat left = (HPBScreenWidth - width)/2;
     self.indexLabel.frame = CGRectMake(left, top, width, height);
@@ -186,7 +188,7 @@
 }
 
 - (CGRect)getImgVFrameInWindow:(UIView *)view {
-    return [view.superview convertRect:view.frame toView:[UIApplication sharedApplication].keyWindow];
+    return [view.superview convertRect:view.frame toView:[UIApplication sharedApplication].windows.firstObject];
 }
 
 #pragma mark -
