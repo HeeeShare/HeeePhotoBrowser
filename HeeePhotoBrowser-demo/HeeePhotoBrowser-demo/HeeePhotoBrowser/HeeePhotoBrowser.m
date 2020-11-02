@@ -202,6 +202,10 @@
 }
 
 - (void)hidePhotoBrowserWithFrame:(CGRect)frame {
+    if (_delegate && [_delegate respondsToSelector:@selector(photoBrowser:willDismissImageAtIndex:)]) {
+        [_delegate photoBrowser:self willDismissImageAtIndex:self.currentIndex];
+    }
+    
     if (_currentIndex - _backwardImageCount < _imageViewArray.count) {
         UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0]];
         cell.contentView.hidden = YES;
@@ -217,6 +221,10 @@
             self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
             self.indexLabel.alpha = 0;
         } completion:^(BOOL finished) {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didDismissImageAtIndex:)]) {
+                [self.delegate photoBrowser:self didDismissImageAtIndex:self.currentIndex];
+            }
+            
             IV.alpha = 1;
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -227,6 +235,9 @@
         [UIView animateWithDuration:0.25 animations:^{
             self.alpha = 0;
         } completion:^(BOOL finished) {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didDismissImageAtIndex:)]) {
+                [self.delegate photoBrowser:self didDismissImageAtIndex:self.currentIndex];
+            }
             [self removeFromSuperview];
         }];
     }

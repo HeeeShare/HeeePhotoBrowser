@@ -16,6 +16,8 @@
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser endDragImageAtIndex:(NSInteger)index close:(BOOL)close;//close表示结束拖拽后是否会关闭photoBrowser
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser willDismissImageAtIndex:(NSInteger)index;
+- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didDismissImageAtIndex:(NSInteger)index;
 
 @end
 
