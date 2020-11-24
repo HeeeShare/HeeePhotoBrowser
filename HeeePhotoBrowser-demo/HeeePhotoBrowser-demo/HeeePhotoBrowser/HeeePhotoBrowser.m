@@ -19,6 +19,7 @@
 @interface HeeePhotoBrowser ()<UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,HeeePhotoCollectionCellDelegate>
 @property (nonatomic,strong) UICollectionView *collectionView;
 @property (nonatomic,strong) UIImageView *animationIV;
+@property (nonatomic,strong) UIImageView *firstImgV;
 @property (nonatomic,strong) NSMutableArray <HeeePhotoCollectionCellModel *>*dataArray;
 @property (nonatomic,strong) NSArray <UIImageView *>*imageViewArray;
 @property (nonatomic,strong) NSArray <NSString *>*highQualityImageUrls;
@@ -41,6 +42,9 @@
         self.imageViewArray = imageViewArray;
         self.currentIndex = currentIndex;
         self.highQualityImageUrls = highQualityImageUrls;
+        if (currentIndex < imageViewArray.count) {
+            self.firstImgV = self.imageViewArray[self.currentIndex];
+        }
         [self setup];
     }
     
@@ -50,8 +54,12 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-    if (self.collectionView.hidden) {
-        [self show];
+    if (self.firstImgV) {
+        if (self.collectionView.hidden) {
+            [self show];
+        }
+    }else{
+        [self dismissViewControllerAnimated:NO completion:nil];
     }
 }
 
@@ -126,18 +134,17 @@
     [[UIApplication sharedApplication].windows.firstObject endEditing:YES];
     
     //隐藏原图
-    UIImageView *currentImgV = self.imageViewArray[self.currentIndex];
-    currentImgV.alpha = 0;
+    _firstImgV.alpha = 0;
     
     //显示动画图
-    self.animationIV.image = currentImgV.image;
-    self.animationIV.frame = [self getImgVFrameInContentView:currentImgV];
+    self.animationIV.image = _firstImgV.image;
+    self.animationIV.frame = [self getImgVFrameInContentView:_firstImgV];
     self.animationIV.hidden = NO;
     
     [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
     [UIView animateWithDuration:0.25 animations:^{
         self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
-        self.animationIV.frame = [self getImageViewFrame:currentImgV.image];
+        self.animationIV.frame = [self getImageViewFrame:self.firstImgV.image];
         self.animationIV.layer.cornerRadius = 0;
         self.indexLabel.alpha = 1;
     } completion:^(BOOL finished) {
