@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 @class HeeePhotoBrowser;
 
-NS_ASSUME_NONNULL_BEGIN
-
 @protocol HeeePhotoBrowserDelegate <NSObject>
 @optional
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index;
@@ -48,5 +46,3 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addImages:(NSArray <NSString *>*)imageUrlArray direction:(BOOL)forward;
 
 @end
-
-NS_ASSUME_NONNULL_END
