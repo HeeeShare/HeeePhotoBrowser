@@ -10,7 +10,7 @@
 #import "UIImageView+WebCache.h"
 #import "HeeePhotoBrowser.h"
 
-@interface ViewController ()<HeeePhotoBrowserDelegate>
+@interface ViewController ()
 @property (nonatomic,strong) NSMutableArray *IVArr;
 @property (nonatomic,strong) NSArray *urlArr;
 
@@ -20,12 +20,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     self.title = @"ViewController";
     self.view.backgroundColor = [UIColor whiteColor];
     _IVArr = [NSMutableArray array];
     _urlArr = @[
                 @"http://t7.baidu.com/it/u=3204887199,3790688592&fm=79&app=86&f=JPEG?w=4610&h=2968",
-                @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1525461180197&di=a23a9834a7b431c9c576f1b35bdb2298&imgtype=jpg&src=http%3A%2F%2Fimg0.imgtn.bdimg.com%2Fit%2Fu%3D3564877025%2C796183547%26fm%3D214%26gp%3D0.jpg",
+                @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1606221992355&di=448982cabd005a108c835cb501f3c3fb&imgtype=0&src=http%3A%2F%2Fimage3.92bizhi.com%2Fnature_natural-scenery-widescreen--06_20-2560x1600.jpg",
                 @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1525461301631&di=fc9f49499318ba398a469f4be601b516&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2Fa%2F55f8c18720263.jpg",
                 ];
     
@@ -50,7 +51,8 @@
 
 - (void)imageClick:(UIGestureRecognizer *)gestureRecognizer {
     NSUInteger currentIndex = [_IVArr indexOfObject:gestureRecognizer.view];
-    [HeeePhotoBrowser showWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:_urlArr];
+    HeeePhotoBrowser *photoBrowser = [[HeeePhotoBrowser alloc] initWithImageViews:_IVArr currentIndex:currentIndex highQualityImageUrls:_urlArr];
+    [self presentViewController:photoBrowser animated:NO completion:nil];
 }
 
 @end

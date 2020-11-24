@@ -134,8 +134,8 @@
     
     if (_deviationY > 0 && point.y > self.originalPoint.y) {
         CGRect rect = [self.fatherView convertRect:self.frame toCoordinateSpace:[UIApplication sharedApplication].keyWindow];
-        [self.photoBrowser hidePhotoBrowserWithFrame:rect];
         !self.endDragImage?:self.endDragImage(YES);
+        [self.photoBrowser hidePhotoBrowserWithFrame:rect];
     }else{
         [UIView animateWithDuration:0.25 animations:^{
             [self.photoBrowser setClearRate:1];

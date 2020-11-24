@@ -27,45 +27,32 @@
 @property (nonatomic,assign) NSUInteger backwardImageCount;
 @property (nonatomic,strong) NSMutableArray <HeeePhotoCollectionCell *>*reuseCellArray;
 @property (nonatomic,strong) UILabel *indexLabel;
-@property (nonatomic,assign) BOOL noSupportLongPress;
 
 @end
 
 @implementation HeeePhotoBrowser
-- (instancetype)init {
+- (instancetype)initWithImageViews:(NSArray <UIImageView *>*)imageViewArray
+              currentIndex:(NSUInteger)currentIndex
+      highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls {
     self = [super init];
     if (self) {
-        self.frame = CGRectMake(0, 0, HPBScreenWidth, HPBScreenHeight);
-        self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
-        [self addSubview:self.animationIV];
-        [self addSubview:self.collectionView];
-        [self addSubview:self.indexLabel];
+        self.modalPresentationStyle = UIModalPresentationOverFullScreen;
+        self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
+        self.imageViewArray = imageViewArray;
+        self.currentIndex = currentIndex;
+        self.highQualityImageUrls = highQualityImageUrls;
+        [self setup];
     }
     
     return self;
 }
 
-- (void)removeFromSuperview {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didRemoveAtIndex:)]) {
-        [self.delegate photoBrowser:self didRemoveAtIndex:self.currentIndex];
-    }
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
     
-    [super removeFromSuperview];
-}
-
-+ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
-                      currentIndex:(NSUInteger)currentIndex
-              highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls {
-    if (imageViewArray.count > 0) {
-        HeeePhotoBrowser *instance = [HeeePhotoBrowser new];
-        instance.imageViewArray = imageViewArray;
-        instance.currentIndex = currentIndex;
-        instance.highQualityImageUrls = highQualityImageUrls;
-        [instance setup];
-        [instance show];
-        return instance;
+    if (self.collectionView.hidden) {
+        [self show];
     }
-    return nil;
 }
 
 - (void)hide {
@@ -74,6 +61,10 @@
 }
 
 - (void)setup {
+    [self.view addSubview:self.animationIV];
+    [self.view addSubview:self.collectionView];
+    [self.view addSubview:self.indexLabel];
+    
     for (int i = 0; i < self.imageViewArray.count; i++) {
         HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
         model.image = self.imageViewArray[i].image;
@@ -140,14 +131,12 @@
     
     //显示动画图
     self.animationIV.image = currentImgV.image;
-    self.animationIV.frame = [self getImgVFrameInWindow:currentImgV];
+    self.animationIV.frame = [self getImgVFrameInContentView:currentImgV];
     self.animationIV.hidden = NO;
     
-    self.collectionView.hidden = YES;
     [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
-    [[UIApplication sharedApplication].windows.firstObject addSubview:self];
     [UIView animateWithDuration:0.25 animations:^{
-        self.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
+        self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:1.0];
         self.animationIV.frame = [self getImageViewFrame:currentImgV.image];
         self.animationIV.layer.cornerRadius = 0;
         self.indexLabel.alpha = 1;
@@ -187,8 +176,8 @@
     return CGRectMake(0, (HPBScreenHeight - H)/2, W, H);
 }
 
-- (CGRect)getImgVFrameInWindow:(UIView *)view {
-    return [view.superview convertRect:view.frame toView:[UIApplication sharedApplication].windows.firstObject];
+- (CGRect)getImgVFrameInContentView:(UIView *)view {
+    return [view.superview convertRect:view.frame toView:self.view];
 }
 
 #pragma mark -
@@ -197,7 +186,7 @@
 }
 
 - (void)setClearRate:(CGFloat)rate {
-    self.backgroundColor = [[UIColor alloc] initWithWhite:0 alpha:pow(rate, 3)];
+    self.view.backgroundColor = [[UIColor alloc] initWithWhite:0 alpha:pow(rate, 3)];
     self.indexLabel.alpha = pow(rate, 3);
 }
 
@@ -216,9 +205,9 @@
         _animationIV.hidden = NO;
         _animationIV.frame = frame;
         [UIView animateWithDuration:0.25 animations:^{
-            self.animationIV.frame = [self getImgVFrameInWindow:self.imageViewArray[self.currentIndex - self.backwardImageCount]];
+            self.animationIV.frame = [self getImgVFrameInContentView:self.imageViewArray[self.currentIndex - self.backwardImageCount]];
             self.animationIV.layer.cornerRadius = IV.layer.cornerRadius;
-            self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
+            self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.0];
             self.indexLabel.alpha = 0;
         } completion:^(BOOL finished) {
             if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didDismissImageAtIndex:)]) {
@@ -228,17 +217,17 @@
             IV.alpha = 1;
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self removeFromSuperview];
+                [self dismissViewControllerAnimated:NO completion:nil];
             });
         }];
     }else{
         [UIView animateWithDuration:0.25 animations:^{
-            self.alpha = 0;
+            self.view.alpha = 0;
         } completion:^(BOOL finished) {
             if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowser:didDismissImageAtIndex:)]) {
                 [self.delegate photoBrowser:self didDismissImageAtIndex:self.currentIndex];
             }
-            [self removeFromSuperview];
+            [self dismissViewControllerAnimated:NO completion:nil];
         }];
     }
 }
@@ -263,7 +252,7 @@
 }
 
 - (void)photoViewSingleTap:(HeeePhotoView *)photoView {
-    CGRect frame = [photoView.scrollview convertRect:photoView.imageview.frame toCoordinateSpace:self];
+    CGRect frame = [photoView.scrollview convertRect:photoView.imageview.frame toCoordinateSpace:self.view];
     [self hidePhotoBrowserWithFrame:frame];
 }
 
@@ -307,7 +296,7 @@
     self.currentIndex = autualIndex;
 
     if (self.currentIndex >= self.dataArray.count) {
-        [self removeFromSuperview];
+        [self dismissViewControllerAnimated:NO completion:nil];
         return;
     }
     
@@ -354,6 +343,7 @@
         collectionView.showsHorizontalScrollIndicator = NO;
         collectionView.pagingEnabled = YES;
         collectionView.delaysContentTouches = NO;
+        collectionView.hidden = YES;
         
         _collectionView = collectionView;
     }

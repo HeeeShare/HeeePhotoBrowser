@@ -11,7 +11,6 @@
 
 @protocol HeeePhotoBrowserDelegate <NSObject>
 @optional
-- (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didRemoveAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didShowImageAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser didLongPressAtIndex:(NSInteger)index;
 - (void)photoBrowser:(HeeePhotoBrowser *)photoBrowser startDragImageAtIndex:(NSInteger)index;
@@ -21,7 +20,7 @@
 
 @end
 
-@interface HeeePhotoBrowser : UIView
+@interface HeeePhotoBrowser : UIViewController
 - (void)setScrollEnabled:(BOOL)scrollEnabled;
 - (void)setClearRate:(CGFloat)rate;
 - (void)hidePhotoBrowserWithFrame:(CGRect)frame;
@@ -33,9 +32,9 @@
  @param currentIndex 第一次点击的图片位置(imageViewArray中的位置)
  @param highQualityImageUrls 如果imageViewArray展示的是缩略图，那么如果需要点开本工具后查看高清图,则highQualityImageUrls里放高清图url
  */
-+ (instancetype)showWithImageViews:(NSArray <UIImageView *>*)imageViewArray
-                      currentIndex:(NSUInteger)currentIndex
-              highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls;
+- (instancetype)initWithImageViews:(NSArray <UIImageView *>*)imageViewArray
+              currentIndex:(NSUInteger)currentIndex
+      highQualityImageUrls:(NSArray <NSString *>*)highQualityImageUrls;
 
 - (void)hide;
 
