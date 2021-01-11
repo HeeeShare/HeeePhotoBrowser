@@ -100,7 +100,7 @@
             [reloadArr addObject:indexpath];
         }
         [UIView performWithoutAnimation:^{
-            [self.collectionView insertItemsAtIndexPaths:reloadArr];
+            [self.collectionView reloadData];
         }];
     }else{
         CGFloat offsetX = self.collectionView.contentOffset.x;
@@ -119,7 +119,7 @@
         self.currentIndex+=temArr.count;
         [self.dataArray insertObjects:temArr atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, temArr.count)]];
         [UIView performWithoutAnimation:^{
-            [self.collectionView insertItemsAtIndexPaths:reloadArr];
+            [self.collectionView reloadData];
         }];
         [self.collectionView setContentOffset:CGPointMake(offsetX + temArr.count*self.collectionView.bounds.size.width, 0) animated:NO];
         if (!self.collectionView.isTracking) {

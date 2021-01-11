@@ -81,7 +81,6 @@
 		5A4203CD24DB9E700092FC15 /* HPBPlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 5A4203CC24DB9E700092FC15 /* HPBPlaceholder.png */; };
 		5A42040124DBD0E30092FC15 /* IMG_0170.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 5A4203FE24DBD0E30092FC15 /* IMG_0170.JPG */; };
 		5A42040224DBD0E30092FC15 /* IMG_0168.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 5A4203FF24DBD0E30092FC15 /* IMG_0168.JPG */; };
-		5A42040324DBD0E30092FC15 /* IMG_0169.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 5A42040024DBD0E30092FC15 /* IMG_0169.JPG */; };
 		95FDC3FC227D9E3200997A07 /* HeeeCircleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 95FDC3FB227D9E3200997A07 /* HeeeCircleView.m */; };
 		A7C071BD217777B200C53E9F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C071BC217777B200C53E9F /* AppDelegate.m */; };
 		A7C071C0217777B200C53E9F /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C071BF217777B200C53E9F /* ViewController.m */; };
@@ -91,6 +90,7 @@
 		A7C072092177781600C53E9F /* HeeePhotoDetectingImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C072022177781600C53E9F /* HeeePhotoDetectingImageView.m */; };
 		A7C0720B2177781600C53E9F /* HeeePhotoView.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C072072177781600C53E9F /* HeeePhotoView.m */; };
 		A7C0720C2177781600C53E9F /* HeeePhotoBrowser.m in Sources */ = {isa = PBXBuildFile; fileRef = A7C072082177781600C53E9F /* HeeePhotoBrowser.m */; };
+		FDF1B4E0256D122D00CEE022 /* IMG_0169.JPG in Resources */ = {isa = PBXBuildFile; fileRef = FDF1B4DF256D122D00CEE022 /* IMG_0169.JPG */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -242,7 +242,6 @@
 		5A4203CC24DB9E700092FC15 /* HPBPlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HPBPlaceholder.png; sourceTree = "<group>"; };
 		5A4203FE24DBD0E30092FC15 /* IMG_0170.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = IMG_0170.JPG; sourceTree = "<group>"; };
 		5A4203FF24DBD0E30092FC15 /* IMG_0168.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = IMG_0168.JPG; sourceTree = "<group>"; };
-		5A42040024DBD0E30092FC15 /* IMG_0169.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = IMG_0169.JPG; sourceTree = "<group>"; };
 		95FDC3FA227D9E3200997A07 /* HeeeCircleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeeeCircleView.h; sourceTree = "<group>"; };
 		95FDC3FB227D9E3200997A07 /* HeeeCircleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeeeCircleView.m; sourceTree = "<group>"; };
 		A7C071B8217777B200C53E9F /* HeeePhotoBrowser-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HeeePhotoBrowser-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -260,6 +259,7 @@
 		A7C072062177781600C53E9F /* HeeePhotoDetectingImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeeePhotoDetectingImageView.h; sourceTree = "<group>"; };
 		A7C072072177781600C53E9F /* HeeePhotoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeeePhotoView.m; sourceTree = "<group>"; };
 		A7C072082177781600C53E9F /* HeeePhotoBrowser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeeePhotoBrowser.m; sourceTree = "<group>"; };
+		FDF1B4DF256D122D00CEE022 /* IMG_0169.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = IMG_0169.JPG; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -479,7 +479,7 @@
 				A7C071BE217777B200C53E9F /* ViewController.h */,
 				A7C071BF217777B200C53E9F /* ViewController.m */,
 				5A4203FF24DBD0E30092FC15 /* IMG_0168.JPG */,
-				5A42040024DBD0E30092FC15 /* IMG_0169.JPG */,
+				FDF1B4DF256D122D00CEE022 /* IMG_0169.JPG */,
 				5A4203FE24DBD0E30092FC15 /* IMG_0170.JPG */,
 				A7C071C4217777B400C53E9F /* Assets.xcassets */,
 				A7C071C6217777B400C53E9F /* LaunchScreen.storyboard */,
@@ -535,7 +535,7 @@
 		A7C071B0217777B200C53E9F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1220;
 				ORGANIZATIONNAME = hgy;
 				TargetAttributes = {
 					A7C071B7217777B200C53E9F = {
@@ -573,7 +573,7 @@
 				5A42040224DBD0E30092FC15 /* IMG_0168.JPG in Resources */,
 				A7C071C5217777B400C53E9F /* Assets.xcassets in Resources */,
 				5A4203CD24DB9E700092FC15 /* HPBPlaceholder.png in Resources */,
-				5A42040324DBD0E30092FC15 /* IMG_0169.JPG in Resources */,
+				FDF1B4E0256D122D00CEE022 /* IMG_0169.JPG in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -703,6 +703,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -762,6 +763,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -796,7 +798,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 27HH8LNC45;
 				INFOPLIST_FILE = "HeeePhotoBrowser-demo/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -814,7 +816,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 27HH8LNC45;
 				INFOPLIST_FILE = "HeeePhotoBrowser-demo/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
