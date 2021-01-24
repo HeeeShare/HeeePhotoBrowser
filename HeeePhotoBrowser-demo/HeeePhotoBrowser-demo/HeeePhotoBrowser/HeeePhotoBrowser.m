@@ -99,22 +99,31 @@
             NSIndexPath *indexpath = [NSIndexPath indexPathForRow:count + i inSection:0];
             [reloadArr addObject:indexpath];
         }
-        [self.collectionView reloadData];
+        [UIView performWithoutAnimation:^{
+            [self.collectionView insertItemsAtIndexPaths:reloadArr];
+        }];
     }else{
         CGFloat offsetX = self.collectionView.contentOffset.x;
+        NSMutableArray *reloadArr = [NSMutableArray array];
         for (NSUInteger i = 0; i < imageUrlArray.count; i++) {
             NSString *imageUrl = imageUrlArray[i];
             HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
             model.imageUrl = imageUrl;
             [self.dataArray insertObject:model atIndex:i];
+            NSIndexPath *indexpath = [NSIndexPath indexPathForRow:i inSection:0];
+            [reloadArr addObject:indexpath];
         }
         self.backwardImageCount+=imageUrlArray.count;
         self.currentIndex+=imageUrlArray.count;
-        [self.collectionView reloadData];
-        [self.collectionView setContentOffset:CGPointMake(offsetX + imageUrlArray.count*self.collectionView.bounds.size.width, 0) animated:NO];
-        if (!self.collectionView.isTracking) {
-            [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:YES];
-        }
+        [UIView performWithoutAnimation:^{
+            [self.collectionView insertItemsAtIndexPaths:reloadArr];
+        }];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.collectionView setContentOffset:CGPointMake(offsetX + imageUrlArray.count*self.collectionView.bounds.size.width, 0) animated:NO];
+            if (!self.collectionView.isTracking) {
+                [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:YES];
+            }
+        });
     }
     
     [self setupIndexLabel];
