@@ -99,29 +99,19 @@
             NSIndexPath *indexpath = [NSIndexPath indexPathForRow:count + i inSection:0];
             [reloadArr addObject:indexpath];
         }
-        [UIView performWithoutAnimation:^{
-            [self.collectionView reloadData];
-        }];
+        [self.collectionView reloadData];
     }else{
         CGFloat offsetX = self.collectionView.contentOffset.x;
-        NSMutableArray *temArr = [NSMutableArray array];
-        NSMutableArray *reloadArr = [NSMutableArray array];
         for (NSUInteger i = 0; i < imageUrlArray.count; i++) {
             NSString *imageUrl = imageUrlArray[i];
             HeeePhotoCollectionCellModel *model = [HeeePhotoCollectionCellModel new];
             model.imageUrl = imageUrl;
-            [temArr addObject:model];
-            NSIndexPath *indexpath = [NSIndexPath indexPathForRow:i inSection:0];
-            [reloadArr addObject:indexpath];
+            [self.dataArray insertObject:model atIndex:i];
         }
         self.backwardImageCount+=imageUrlArray.count;
-        
-        self.currentIndex+=temArr.count;
-        [self.dataArray insertObjects:temArr atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, temArr.count)]];
-        [UIView performWithoutAnimation:^{
-            [self.collectionView reloadData];
-        }];
-        [self.collectionView setContentOffset:CGPointMake(offsetX + temArr.count*self.collectionView.bounds.size.width, 0) animated:NO];
+        self.currentIndex+=imageUrlArray.count;
+        [self.collectionView reloadData];
+        [self.collectionView setContentOffset:CGPointMake(offsetX + imageUrlArray.count*self.collectionView.bounds.size.width, 0) animated:NO];
         if (!self.collectionView.isTracking) {
             [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self.currentIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:YES];
         }
